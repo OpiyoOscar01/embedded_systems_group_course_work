@@ -20,6 +20,12 @@ void test_schedule_weekday_math(void);
 void test_schedule_parse(void);
 void test_schedule_edit(void);
 void test_schedule_holidays(void);
+void test_proto_event_ids(void);
+void test_proto_encode_decode(void);
+void test_proto_escaping(void);
+void test_proto_decode_edge_cases(void);
+void test_proto_topics(void);
+void test_proto_dedupe(void);
 
 int main(void)
 {
@@ -34,6 +40,12 @@ int main(void)
     test_schedule_parse();
     test_schedule_edit();
     test_schedule_holidays();
+    test_proto_event_ids();
+    test_proto_encode_decode();
+    test_proto_escaping();
+    test_proto_decode_edge_cases();
+    test_proto_topics();
+    test_proto_dedupe();
 
     if (g_failures == 0) {
         printf("ALL TESTS PASSED\n");

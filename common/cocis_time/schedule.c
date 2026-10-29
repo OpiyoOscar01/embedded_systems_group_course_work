@@ -10,11 +10,13 @@
 #include <stdio.h>
 #include <string.h>
 
+/** Gregorian leap-year rule, needed for February date validation. */
 static bool is_leap_year(int year)
 {
     return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 
+/** Number of days in a month, or 0 for an invalid month number. */
 static int days_in_month(int year, int month)
 {
     static const int days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -27,6 +29,10 @@ static int days_in_month(int year, int month)
     return days[month - 1];
 }
 
+/**
+ * Strictly parse "YYYY-MM-DD" and reject impossible calendar dates.
+ * Used by the holiday commands and by the on-SD schedule loader.
+ */
 static bool parse_ymd(const char *text, int *year, int *month, int *day)
 {
     if (text == NULL || strlen(text) != COCIS_HOLIDAY_DATE_LEN) {
@@ -68,6 +74,11 @@ static bool parse_ymd(const char *text, int *year, int *month, int *day)
     return true;
 }
 
+/**
+ * Install the factory schedule: weekdays 07:00-21:00, Saturday 08:00-14:00,
+ * Sunday closed, no holidays. This keeps a fresh node usable before an admin
+ * pushes a site-specific schedule.
+ */
 void cocis_schedule_default(cocis_schedule_t *schedule)
 {
     if (schedule == NULL) {
@@ -91,6 +102,11 @@ void cocis_schedule_default(cocis_schedule_t *schedule)
     schedule->holiday_count = 0;
 }
 
+/**
+ * Parse a 24-hour "HH:MM" string into minutes since midnight.
+ * Rejects anything that is not exactly five characters, so "7:00" and "7:0"
+ * are errors rather than being silently normalised.
+ */
 bool cocis_time_parse_hhmm(const char *text, uint16_t *minutes)
 {
     if (text == NULL || minutes == NULL) {
@@ -118,6 +134,10 @@ bool cocis_time_parse_hhmm(const char *text, uint16_t *minutes)
     return true;
 }
 
+/**
+ * Replace one weekday window. The window is half-open [open, close); equal or
+ * reversed endpoints are rejected because midnight-crossing is unsupported.
+ */
 bool cocis_schedule_set_day(cocis_schedule_t *schedule, cocis_weekday_t day,
                             const char *open_hhmm, const char *close_hhmm)
 {
@@ -143,6 +163,7 @@ bool cocis_schedule_set_day(cocis_schedule_t *schedule, cocis_weekday_t day,
     return true;
 }
 
+/** Mark one weekday as fully closed and clear its stale window values. */
 void cocis_schedule_close_day(cocis_schedule_t *schedule, cocis_weekday_t day)
 {
     if (schedule == NULL || day < 0 || day >= COCIS_WEEKDAY_COUNT) {
@@ -153,6 +174,11 @@ void cocis_schedule_close_day(cocis_schedule_t *schedule, cocis_weekday_t day)
     schedule->days[day].close_min = 0;
 }
 
+/**
+ * Convert a calendar date to our Monday-first weekday index using Sakamoto's
+ * algorithm. The function also validates the date (including leap years), so
+ * callers can use it as a cheap date check.
+ */
 int cocis_weekday_from_ymd(int year, int month, int day)
 {
     static const int month_offsets[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
@@ -175,6 +201,10 @@ int cocis_weekday_from_ymd(int year, int month, int day)
     return (sunday_based + 6) % 7;
 }
 
+/**
+ * Check the holiday list by formatting the date as "YYYY-MM-DD" and comparing
+ * strings. The list is short (max COCIS_HOLIDAY_MAX), so a linear scan is fine.
+ */
 bool cocis_schedule_is_holiday(const cocis_schedule_t *schedule,
                                int year, int month, int day)
 {
@@ -196,6 +226,10 @@ bool cocis_schedule_is_holiday(const cocis_schedule_t *schedule,
     return false;
 }
 
+/**
+ * Add a holiday date. Rejects duplicates, invalid dates and a full list so the
+ * caller can report a precise error to the admin.
+ */
 bool cocis_schedule_add_holiday(cocis_schedule_t *schedule, const char *ymd)
 {
     if (schedule == NULL) {
@@ -221,6 +255,10 @@ bool cocis_schedule_add_holiday(cocis_schedule_t *schedule, const char *ymd)
     return true;
 }
 
+/**
+ * Remove a holiday date. To keep the array compact, the last entry is moved
+ * into the freed slot instead of shifting every following entry.
+ */
 bool cocis_schedule_del_holiday(cocis_schedule_t *schedule, const char *ymd)
 {
     if (schedule == NULL || ymd == NULL) {
@@ -241,6 +279,15 @@ bool cocis_schedule_del_holiday(cocis_schedule_t *schedule, const char *ymd)
     return false;
 }
 
+/**
+ * Evaluate one scan instant against the schedule.
+ *
+ * Order matters and encodes the fail-secure policy:
+ *   1. no valid clock  -> closed (FR-SCH-07)
+ *   2. holiday         -> closed
+ *   3. day closed      -> closed
+ *   4. open <= t < close -> open, otherwise closed for the day
+ */
 cocis_schedule_state_t cocis_schedule_eval(const cocis_schedule_t *schedule,
                                            bool time_valid,
                                            int year, int month, int day,
@@ -271,6 +318,7 @@ cocis_schedule_state_t cocis_schedule_eval(const cocis_schedule_t *schedule,
     return COCIS_SCHED_CLOSED_HOURS;
 }
 
+/** Convenience predicate used by callers that only care about open/closed. */
 bool cocis_schedule_is_open(const cocis_schedule_t *schedule, bool time_valid,
                             int year, int month, int day, int hour, int minute)
 {

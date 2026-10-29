@@ -79,9 +79,11 @@ Rooms 1 and 2 use the same room_node firmware; only CONFIG_COCIS_ROOM_ID differs
 - Host unit tests (pure logic, no hardware): `bash tests/host/run_tests.sh`
   Uses the native GCC; add new `test_*.c` files to `tests/host/main.c` and
   `tests/host/run_tests.sh`.
-- On-target/integration tests: run the scenario in Wokwi and record the result
-  in `docs/links.md` and the progress log.
+- On-target/integration tests: run the scenario in Wokwi at the end of the
+  implementation, then record the result in `docs/links.md` and the progress log.
 - Keep pure logic free of ESP-IDF calls so it can be host-tested.
+- Write code and tests stage by stage, commit each stage, and comment code
+  clearly for review by colleagues.
 
 ## Build & Simulation (Wokwi + ESP-IDF)
 - Each terminal is its own ESP-IDF project: run `idf.py build` inside

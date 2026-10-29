@@ -1,8 +1,14 @@
 # Implementation Guide - CoCIS Smart Control and Monitoring System
 
 This is the line-up we follow from first increment to last. Every increment is
-small, testable, and ends with: build -> run in Wokwi (or unit test) -> commit.
-We do not start the next increment until the current one passes its gate.
+small, testable, and ends with: implement -> host tests -> commit -> next.
+
+Working agreement (updated 2026-10-29):
+- Write the whole implementation first, stage by stage.
+- Every stage ships with host unit tests for its pure logic.
+- Commit after each stage; simulation in Wokwi is done once at the end.
+- ESP-IDF builds are run when a stage changes target code, to catch breakage early.
+- Code must be commented and documented for review by colleagues.
 
 Author: Opiyo Oscar (BSE IV, Makerere University)
 Course: Embedded Systems
@@ -143,7 +149,7 @@ in-memory bus) and document it before continuing.
 | [x] | I-07 | cocis_types: enums, result codes, roles, modes, constants | FR-ACC-05 | both projects compile; no magic numbers |
 | [x] | I-08 | cocis_log_chain: SHA-256 chain builder + verifier | FR-STO-05, INN-03 | unit test: valid OK, 1 edited line detected |
 | [x] | I-09 | cocis_time: SNTP, EAT, pure schedule evaluator | FR-SCH-05 | unit test: windows + holidays correct |
-| [ ] | I-10 | cocis_proto: envelope codec, topics, event id, dedupe | FR-SYN-03, FR-DST-02 | unit test: round-trip + unique ids |
+| [x] | I-10 | cocis_proto: envelope codec, topics, event id, dedupe | FR-SYN-03, FR-DST-02 | unit test: round-trip + unique ids |
 
 ### Phase 2 - Entrance Hub local (offline first)
 
@@ -341,7 +347,8 @@ Innovations (Table 16)
 | 2026-10-29 | I-01 | Wi-Fi + MQTT spike code added; awaiting two-window test | (pending) |
 | 2026-10-29 | I-07 | types + constants; host test passes | 8523625+ |
 | 2026-10-29 | I-08 | hash chain + verifier; host tests pass | 8b332f3 |
-| 2026-10-29 | I-09 | schedule model + evaluator + SNTP; host tests pass | (pending) |
+| 2026-10-29 | I-09 | schedule model + evaluator + SNTP; host tests pass | 5f5d4f6 |
+| 2026-10-29 | I-10 | envelope codec, topics, event id, dedupe; host tests pass | (pending) |
 | | | | |
 
 ---

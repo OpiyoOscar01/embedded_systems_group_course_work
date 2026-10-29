@@ -9,6 +9,14 @@
 
 #include <string.h>
 
+/**
+ * Compute the next link: hash(prev_hash || record_text).
+ *
+ * The previous hash is always COCIS_HASH_LEN bytes; the record is the exact
+ * CSV line that is written to disk. Concatenating the two into a temporary
+ * buffer gives the same result as streaming them into the hash function but
+ * keeps this module independent of any crypto library.
+ */
 bool cocis_chain_next(cocis_hash_fn hash,
                       const uint8_t prev[COCIS_HASH_LEN],
                       const char *record,
@@ -31,6 +39,13 @@ bool cocis_chain_next(cocis_hash_fn hash,
     return true;
 }
 
+/**
+ * Recompute the whole chain from the genesis hash and compare every link with
+ * the hash that was stored next to the record.
+ *
+ * The first mismatch is enough to prove tampering, so verification stops and
+ * returns that index. -1 means every record matched.
+ */
 int cocis_chain_verify(cocis_hash_fn hash,
                        const uint8_t genesis_hash[COCIS_HASH_LEN],
                        const cocis_log_record_t *records,
