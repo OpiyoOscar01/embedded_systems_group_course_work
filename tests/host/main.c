@@ -43,6 +43,18 @@ void test_light_daylight(void);
 void test_light_override(void);
 void test_daylight_hysteresis(void);
 void test_energy_accounting(void);
+void test_auth_login(void);
+void test_auth_lockout(void);
+void test_auth_idle_and_roles(void);
+void test_auth_must_change(void);
+void test_auth_limits(void);
+void test_scan_debounce(void);
+void test_scan_debounce_wrap(void);
+void test_emergency_state(void);
+void test_emergency_roll_call(void);
+void test_alerts_denials(void);
+void test_alerts_capacity(void);
+void test_alerts_tamper(void);
 
 int main(void)
 {
@@ -80,6 +92,18 @@ int main(void)
     test_light_override();
     test_daylight_hysteresis();
     test_energy_accounting();
+    test_auth_login();
+    test_auth_lockout();
+    test_auth_idle_and_roles();
+    test_auth_must_change();
+    test_auth_limits();
+    test_scan_debounce();
+    test_scan_debounce_wrap();
+    test_emergency_state();
+    test_emergency_roll_call();
+    test_alerts_denials();
+    test_alerts_capacity();
+    test_alerts_tamper();
 
     if (g_failures == 0) {
         printf("ALL TESTS PASSED\n");

@@ -17,6 +17,10 @@ gcc -std=c11 -Wall -Wextra -Werror -O1 \
     -I "$ROOT/entrance_node/components/door_fsm/include" \
     -I "$ROOT/room_node/components/light_fsm/include" \
     -I "$ROOT/room_node/components/energy/include" \
+    -I "$ROOT/entrance_node/components/auth/include" \
+    -I "$ROOT/entrance_node/components/scan_filter/include" \
+    -I "$ROOT/entrance_node/components/emergency/include" \
+    -I "$ROOT/entrance_node/components/alerts/include" \
     -I "$ROOT/tests/host" \
     "$ROOT/tests/host/main.c" \
     "$ROOT/tests/host/test_types.c" \
@@ -28,6 +32,10 @@ gcc -std=c11 -Wall -Wextra -Werror -O1 \
     "$ROOT/tests/host/test_occupancy.c" \
     "$ROOT/tests/host/test_door.c" \
     "$ROOT/tests/host/test_light.c" \
+    "$ROOT/tests/host/test_auth.c" \
+    "$ROOT/tests/host/test_scan.c" \
+    "$ROOT/tests/host/test_emergency.c" \
+    "$ROOT/tests/host/test_alerts.c" \
     "$ROOT/common/cocis_log_chain/chain.c" \
     "$ROOT/common/cocis_time/schedule.c" \
     "$ROOT/common/cocis_proto/proto.c" \
@@ -38,6 +46,10 @@ gcc -std=c11 -Wall -Wextra -Werror -O1 \
     "$ROOT/room_node/components/light_fsm/light_fsm.c" \
     "$ROOT/room_node/components/light_fsm/daylight.c" \
     "$ROOT/room_node/components/energy/energy.c" \
+    "$ROOT/entrance_node/components/auth/auth.c" \
+    "$ROOT/entrance_node/components/scan_filter/scan_filter.c" \
+    "$ROOT/entrance_node/components/emergency/emergency.c" \
+    "$ROOT/entrance_node/components/alerts/alerts.c" \
     -o "$OUT/host_tests"
 
 "$OUT/host_tests"

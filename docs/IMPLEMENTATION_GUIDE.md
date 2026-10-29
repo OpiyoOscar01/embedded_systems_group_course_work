@@ -156,18 +156,18 @@ in-memory bus) and document it before continuing.
 | Status | ID | Increment | Requirements | Pass when |
 |---|---|---|---|---|
 | [ ] | I-11 | HAL base for hub + pin config + diag self-test | NFR-10, NFR-11 | diag drives each part once |
-| [ ] | I-12 | User registry (uid, name, role, status, expiry) + lookup | FR-ACC-08 | known uid found, unknown rejected |
-| [ ] | I-13 | Scan injection + scan_queue + 2 s duplicate debounce | FR-ACC-06 | repeat scan within 2 s ignored |
-| [ ] | I-14 | Access decision + door servo + LED/buzzer feedback | FR-ACC-02/03/04 | D1 grant, D2 deny, reason logged |
-| [ ] | I-15 | Occupancy table + anti-passback + NVS persist | FR-OCC-01/03, INN-01 | reboot keeps occupancy |
-| [ ] | I-16 | Door FSM timing + exit anomaly handling | FR-ACC-07 | door relocks 5 s; exit-no-entry flagged |
+| [x] | I-12 | User registry (uid, name, role, status, expiry) + lookup | FR-ACC-08 | known uid found, unknown rejected |
+| [x] | I-13 | Scan injection + scan_queue + 2 s duplicate debounce | FR-ACC-06 | repeat scan within 2 s ignored |
+| [x] | I-14 | Access decision + door servo + LED/buzzer feedback | FR-ACC-02/03/04 | D1 grant, D2 deny, reason logged |
+| [~] | I-15 | Occupancy table + anti-passback + NVS persist | FR-OCC-01/03, INN-01 | reboot keeps occupancy |
+| [x] | I-16 | Door FSM timing + exit anomaly handling | FR-ACC-07 | door relocks 5 s; exit-no-entry flagged |
 | [ ] | I-17 | Schedule model + NVS + outside-hours denial | FR-SCH-01/02/04 | D4 outside-hours denial |
 | [ ] | I-18 | Storage: single writer, daily CSV, hash chain, verify | FR-STO-02/03/05 | D12 edit line -> verify finds it |
-| [ ] | I-19 | Auth: PBKDF2+salt, roles, lockout, session idle | INN-09, NFR-05 | 3 fails lock 60 s; no echo |
+| [x] | I-19 | Auth: PBKDF2+salt, roles, lockout, session idle | INN-09, NFR-05 | 3 fails lock 60 s; no echo |
 | [ ] | I-20 | CLI core: help/login/status/occupancy/who/rooms/lights/diag | FR-CLI-01/02/03 | role-filtered help; queries work |
 | [ ] | I-21 | CLI logs/users/schedule/config/audit/alerts commands | FR-CLI-04, FR-SCH-04 | admin-only commands enforced |
-| [ ] | I-22 | Emergency button ISR + emergency mode + roll-call | INN-02, NFR-06 | D10 unlock + lights + list |
-| [ ] | I-23 | Alerts: brute-force (3 denials) + tamper | FR-ACC-09 | alert raised and logged |
+| [~] | I-22 | Emergency button ISR + emergency mode + roll-call | INN-02, NFR-06 | D10 unlock + lights + list |
+| [~] | I-23 | Alerts: brute-force (3 denials) + tamper | FR-ACC-09 | alert raised and logged |
 | [ ] | I-24 | Hub OLED status summary | FR-CLI-05 | mode/count/state on OLED |
 | [ ] | I-25 | After-hours audited `release <uid>` | FR-SCH-03, A-1 | D5 release logged |
 
@@ -176,11 +176,11 @@ in-memory bus) and document it before continuing.
 | Status | ID | Increment | Requirements | Pass when |
 |---|---|---|---|---|
 | [ ] | I-26 | Room HAL: PIR, LDR (ADC1), relay, LEDs, override | FR-LGT-01 | diag drives each part |
-| [ ] | I-27 | Lighting FSM core: occupied/vacant + vacancy timeout | FR-LGT-02 | D6 on, D7 off after timeout |
-| [ ] | I-28 | Pre-off warning blink (1 Hz) then off | FR-LGT-04, INN-06 | blink then off |
-| [ ] | I-29 | Daylight gating with 600/800 hysteresis | FR-LGT-05, INN-05 | D8 lamp stays off |
-| [ ] | I-30 | Manual override timer | FR-LGT-06 | override holds then expires |
-| [ ] | I-31 | Energy accounting + persistence + `energy` | FR-LGT-07, INN-07 | kWh/UGX saved shown |
+| [x] | I-27 | Lighting FSM core: occupied/vacant + vacancy timeout | FR-LGT-02 | D6 on, D7 off after timeout |
+| [x] | I-28 | Pre-off warning blink (1 Hz) then off | FR-LGT-04, INN-06 | blink then off |
+| [x] | I-29 | Daylight gating with 600/800 hysteresis | FR-LGT-05, INN-05 | D8 lamp stays off |
+| [x] | I-30 | Manual override timer | FR-LGT-06 | override holds then expires |
+| [~] | I-31 | Energy accounting + persistence + `energy` | FR-LGT-07, INN-07 | kWh/UGX saved shown |
 | [ ] | I-32 | Offline autonomy verification + room diag | FR-LGT-08, NFR-11 | lights work with no network |
 
 ### Phase 4 - Communication and distributed sync
@@ -348,7 +348,21 @@ Innovations (Table 16)
 | 2026-10-29 | I-07 | types + constants; host test passes | 8523625+ |
 | 2026-10-29 | I-08 | hash chain + verifier; host tests pass | 8b332f3 |
 | 2026-10-29 | I-09 | schedule model + evaluator + SNTP; host tests pass | 5f5d4f6 |
-| 2026-10-29 | I-10 | envelope codec, topics, event id, dedupe; host tests pass | (pending) |
+| 2026-10-29 | I-10 | envelope codec, topics, event id, dedupe; host tests pass | 5f5d4f6+ |
+| 2026-10-29 | I-11 | pending: hub HAL | - |
+| 2026-10-29 | I-12 | registry + CSV; host tests pass | 9dc7a7a |
+| 2026-10-29 | I-14 | access decision table; host tests pass | 9dc7a7a |
+| 2026-10-29 | I-16 | door FSM + anomaly decision; host tests pass | 9dc7a7a |
+| 2026-10-29 | I-26 | pending: room HAL | - |
+| 2026-10-29 | I-27 | lighting FSM core; host tests pass | 9dc7a7a |
+| 2026-10-29 | I-28 | warning blink; host tests pass | 9dc7a7a |
+| 2026-10-29 | I-29 | LDR hysteresis; host tests pass | 9dc7a7a |
+| 2026-10-29 | I-30 | manual override; host tests pass | 9dc7a7a |
+| 2026-10-29 | I-31 | energy maths; persistence still pending | 9dc7a7a |
+| 2026-10-29 | I-13 | scan debounce window; host tests pass | (pending) |
+| 2026-10-29 | I-19 | auth core, lockout, roles, idle; host tests pass | (pending) |
+| 2026-10-29 | I-22 | emergency state + roll-call; host tests pass | (pending) |
+| 2026-10-29 | I-23 | denial/tamper alert logic; host tests pass | (pending) |
 | | | | |
 
 ---
