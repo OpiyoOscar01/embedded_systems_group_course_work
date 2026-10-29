@@ -9,11 +9,14 @@ mkdir -p "$OUT"
 gcc -std=c11 -Wall -Wextra -Werror -O1 \
     -I "$ROOT/common/cocis_types/include" \
     -I "$ROOT/common/cocis_log_chain/include" \
+    -I "$ROOT/common/cocis_time/include" \
     -I "$ROOT/tests/host" \
     "$ROOT/tests/host/main.c" \
     "$ROOT/tests/host/test_types.c" \
     "$ROOT/tests/host/test_log_chain.c" \
+    "$ROOT/tests/host/test_schedule.c" \
     "$ROOT/common/cocis_log_chain/chain.c" \
+    "$ROOT/common/cocis_time/schedule.c" \
     -o "$OUT/host_tests"
 
 "$OUT/host_tests"
