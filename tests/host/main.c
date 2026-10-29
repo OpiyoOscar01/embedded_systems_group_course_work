@@ -26,6 +26,23 @@ void test_proto_escaping(void);
 void test_proto_decode_edge_cases(void);
 void test_proto_topics(void);
 void test_proto_dedupe(void);
+void test_registry_basic(void);
+void test_registry_capacity(void);
+void test_registry_expiry(void);
+void test_registry_csv(void);
+void test_access_identity(void);
+void test_access_emergency(void);
+void test_access_schedule(void);
+void test_access_antipassback(void);
+void test_occupancy_flow(void);
+void test_occupancy_capacity(void);
+void test_door_timing(void);
+void test_door_defaults_and_wrap(void);
+void test_light_occupancy_and_warning(void);
+void test_light_daylight(void);
+void test_light_override(void);
+void test_daylight_hysteresis(void);
+void test_energy_accounting(void);
 
 int main(void)
 {
@@ -46,6 +63,23 @@ int main(void)
     test_proto_decode_edge_cases();
     test_proto_topics();
     test_proto_dedupe();
+    test_registry_basic();
+    test_registry_capacity();
+    test_registry_expiry();
+    test_registry_csv();
+    test_access_identity();
+    test_access_emergency();
+    test_access_schedule();
+    test_access_antipassback();
+    test_occupancy_flow();
+    test_occupancy_capacity();
+    test_door_timing();
+    test_door_defaults_and_wrap();
+    test_light_occupancy_and_warning();
+    test_light_daylight();
+    test_light_override();
+    test_daylight_hysteresis();
+    test_energy_accounting();
 
     if (g_failures == 0) {
         printf("ALL TESTS PASSED\n");
