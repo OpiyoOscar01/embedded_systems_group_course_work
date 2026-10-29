@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = "build/room_node.bin"
+elf = "build/room_node.elf"
