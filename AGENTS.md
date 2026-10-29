@@ -75,6 +75,14 @@ Rooms 1 and 2 use the same room_node firmware; only CONFIG_COCIS_ROOM_ID differs
 - The ESP32 DevKit V1 has an onboard blue LED wired to `D2`/GPIO2, so driving GPIO2 lights it too. Do not confuse it with an external LED.
 - `wokwi-led` pins are `A` (anode) and `C` (cathode); `wokwi-resistor` pins are `1` and `2`.
 
+## Testing
+- Host unit tests (pure logic, no hardware): `bash tests/host/run_tests.sh`
+  Uses the native GCC; add new `test_*.c` files to `tests/host/main.c` and
+  `tests/host/run_tests.sh`.
+- On-target/integration tests: run the scenario in Wokwi and record the result
+  in `docs/links.md` and the progress log.
+- Keep pure logic free of ESP-IDF calls so it can be host-tested.
+
 ## Build & Simulation (Wokwi + ESP-IDF)
 - Each terminal is its own ESP-IDF project: run `idf.py build` inside
   `entrance_node/` or `room_node/` (not the repo root).

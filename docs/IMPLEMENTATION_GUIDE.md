@@ -140,8 +140,8 @@ in-memory bus) and document it before continuing.
 
 | Status | ID | Increment | Requirements | Pass when |
 |---|---|---|---|---|
-| [ ] | I-07 | cocis_types: enums, result codes, roles, modes, constants | FR-ACC-05 | both projects compile; no magic numbers |
-| [ ] | I-08 | cocis_log_chain: SHA-256 chain builder + verifier | FR-STO-05, INN-03 | unit test: valid OK, 1 edited line detected |
+| [x] | I-07 | cocis_types: enums, result codes, roles, modes, constants | FR-ACC-05 | both projects compile; no magic numbers |
+| [x] | I-08 | cocis_log_chain: SHA-256 chain builder + verifier | FR-STO-05, INN-03 | unit test: valid OK, 1 edited line detected |
 | [ ] | I-09 | cocis_time: SNTP, EAT, pure schedule evaluator | FR-SCH-05 | unit test: windows + holidays correct |
 | [ ] | I-10 | cocis_proto: envelope codec, topics, event id, dedupe | FR-SYN-03, FR-DST-02 | unit test: round-trip + unique ids |
 
@@ -339,6 +339,8 @@ Innovations (Table 16)
 |---|---|---|---|
 | 2026-10-29 | I-00 | repo split; entrance build OK, room build pending | e734000 |
 | 2026-10-29 | I-01 | Wi-Fi + MQTT spike code added; awaiting two-window test | (pending) |
+| 2026-10-29 | I-07 | types + constants; host test passes | 8523625+ |
+| 2026-10-29 | I-08 | hash chain + verifier; host tests pass | 8523625+ |
 | | | | |
 
 ---
