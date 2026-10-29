@@ -1,3 +1,10 @@
+/**
+ * @file Kconfig.projbuild
+ * @brief Room node configuration (room id + shared networking).
+ * @author Opiyo Oscar
+ * @requirements FR-DST-02, FR-DST-05
+ */
+
 menu "CoCIS Room Node"
 
 config COCIS_ROOM_ID
@@ -7,5 +14,30 @@ config COCIS_ROOM_ID
     help
         Identifies this room node. Room 1 and Room 2 run the same firmware
         and differ only by this configured value.
+
+endmenu
+
+menu "CoCIS Networking"
+
+config COCIS_WIFI_SSID
+    string "Wi-Fi SSID"
+    default "Wokwi-GUEST"
+
+config COCIS_WIFI_PASSWORD
+    string "Wi-Fi password"
+    default ""
+    help
+        Leave empty for the open Wokwi-GUEST network.
+
+config COCIS_MQTT_URI
+    string "MQTT broker URI"
+    default "mqtt://broker.hivemq.com:1883"
+
+config COCIS_GROUP_PREFIX
+    string "MQTT group topic prefix"
+    default "cocis26-oscar-a91f"
+    help
+        Unique prefix so our topics do not collide with other groups on a
+        public broker. Must be identical on every node.
 
 endmenu

@@ -126,7 +126,7 @@ account). Fix once, then push normally.
 | Status | ID | Increment | Requirements | Pass when |
 |---|---|---|---|---|
 | [x] | I-00 | Split repo into common/ + entrance_node/ + room_node/, smoke test | FR-DST-01 | both projects build; LED/blink + banner in Wokwi |
-| [ ] | I-01 | Two-project MQTT spike over Wokwi-GUEST (decides Option A/B) | FR-DST-02, S2 | message from A appears on B |
+| [~] | I-01 | Two-project MQTT spike over Wokwi-GUEST (decides Option A/B) | FR-DST-02, S2 | message from A appears on B |
 | [ ] | I-02 | SD card mount + append/read spike | FR-STO-01, S4 | file written and read back |
 | [ ] | I-03 | SNTP time + EAT conversion spike | FR-SCH-07, S3 | correct UTC/local time printed |
 | [ ] | I-04 | RFID source spike (console `sim scan` behind HAL) | FR-ACC-02, S5 | injected UID reaches HAL |
@@ -337,7 +337,8 @@ Innovations (Table 16)
 
 | Date | Increment | Result | Commit |
 |---|---|---|---|
-| 2026-10-29 | I-00 | repo split; smoke test pending build | e734000 |
+| 2026-10-29 | I-00 | repo split; entrance build OK, room build pending | e734000 |
+| 2026-10-29 | I-01 | Wi-Fi + MQTT spike code added; awaiting two-window test | (pending) |
 | | | | |
 
 ---
