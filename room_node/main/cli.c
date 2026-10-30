@@ -120,7 +120,7 @@ static void cmd_export(room_app_t *app)
             continue;
         }
 
-        char path[96];
+        char path[512];
         snprintf(path, sizeof(path), "logs/energy/%s", entry->d_name);
 
         size_t length = 0;
@@ -132,13 +132,22 @@ static void cmd_export(room_app_t *app)
         uint64_t saved = 0;
         for (char *line = strtok(content, "\r\n"); line != NULL;
              line = strtok(NULL, "\r\n")) {
+            char stamp[32];
+            char room[16];
+            unsigned long long lamp_on = 0;
+            unsigned long long baseline = 0;
             unsigned long long line_used = 0;
             unsigned long long line_saved = 0;
-            if (sscanf(line, "%*[^,],%*[^,],%*llu,%*llu,%llu,%llu",
-                       &line_used, &line_saved) == 2) {
+            if (sscanf(line, "%31[^,],%15[^,],%llu,%llu,%llu,%llu",
+                       stamp, room, &lamp_on, &baseline,
+                       &line_used, &line_saved) == 6) {
                 used += line_used;
                 saved += line_saved;
             }
+            (void)stamp;
+            (void)room;
+            (void)lamp_on;
+            (void)baseline;
         }
 
         char date[9];
