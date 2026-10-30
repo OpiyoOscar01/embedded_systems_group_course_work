@@ -424,10 +424,12 @@ Both projects build and the host tests pass, and S-05 has wired both Wokwi
 diagrams to the pin maps. Remaining: run the CLI-driven demo D1-D12 (S-06),
 record the results in docs/links.md (S-07), then complete S-08 (report/tag).
 
-CLI quick start for the demo:
-- Entrance: `login security security123`, `scan in A1B2C3D4`, `status`,
-  `occupancy`, `nodes`, `rooms`, `login admin admin123` then
-  `passwd admin123 <new>`, `release A1B2C3D4`, `lights 1 on`,
-  `schedule set mon 08:00 10:00`, `emergency on`.
-- Room: `sim motion on`, `sim lux 50`, `sim clear`, `light on|off|auto`,
-  `status`, `schedule`, `energy`, `diag`.
+CLI quick start for the demo (the `cocis` prefix is optional):
+- Entrance: `cocis login security security123`, `cocis scan in A1B2C3D4`,
+  `cocis status`, `cocis occupancy`, `cocis nodes`, `cocis rooms`,
+  `cocis login admin admin123` then `cocis passwd admin123 <new>`,
+  `cocis release A1B2C3D4`, `cocis lights 1 on`,
+  `cocis schedule set mon 08:00 10:00`, `cocis emergency on`.
+- Room: `cocis sim motion on`, `cocis sim lux 50`, `cocis sim clear`,
+  `cocis light on|off|auto`, `cocis status`, `cocis schedule`,
+  `cocis energy`, `cocis diag`.

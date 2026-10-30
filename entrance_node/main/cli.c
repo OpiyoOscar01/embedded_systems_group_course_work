@@ -123,7 +123,8 @@ static const char *day_name(int day)
 static void cmd_help(void)
 {
     printf(
-        "\nCommands\n"
+        "\nUsage: cocis <command> [args]   (the cocis prefix is optional)\n\n"
+        "Commands\n"
         "  help                              this list\n"
         "  login <user> <pass>               open a session\n"
         "  logout                            close the session\n"
@@ -744,6 +745,19 @@ static void execute(hub_app_t *app, char *line)
     }
     if (argc == 0) {
         return;
+    }
+
+    /* Accept the git-style `cocis <command>` prefix as well as bare
+     * commands, so scripts can use one consistent form. */
+    if (strcasecmp(argv[0], "cocis") == 0) {
+        for (int i = 1; i < argc; i++) {
+            argv[i - 1] = argv[i];
+        }
+        argv[--argc] = NULL;
+        if (argc == 0) {
+            cmd_help();
+            return;
+        }
     }
 
     const char *command = argv[0];

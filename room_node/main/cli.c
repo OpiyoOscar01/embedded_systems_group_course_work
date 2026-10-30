@@ -37,7 +37,8 @@ static const char *state_name(cocis_light_state_t state)
 
 static void print_help(void)
 {
-    printf("\nCommands\n"
+    printf("\nUsage: cocis <command> [args]   (the cocis prefix is optional)\n\n"
+           "Commands\n"
            "  help                    this list\n"
            "  status                  sensors and lamp state\n"
            "  override [min]          force the lamp on (bounded)\n"
@@ -199,16 +200,29 @@ static void cmd_schedule(room_app_t *app)
 
 static void execute(room_app_t *app, char *line)
 {
-    char *argv[4] = {0};
+    char *argv[5] = {0};
     int argc = 0;
     char *save = NULL;
     for (char *token = strtok_r(line, " \t", &save);
-         token != NULL && argc < 4;
+         token != NULL && argc < 5;
          token = strtok_r(NULL, " \t", &save)) {
         argv[argc++] = token;
     }
     if (argc == 0) {
         return;
+    }
+
+    /* Accept the git-style `cocis <command>` prefix as well as bare
+     * commands, so scripts can use one consistent form. */
+    if (strcasecmp(argv[0], "cocis") == 0) {
+        for (int i = 1; i < argc; i++) {
+            argv[i - 1] = argv[i];
+        }
+        argv[--argc] = NULL;
+        if (argc == 0) {
+            print_help();
+            return;
+        }
     }
 
     if (strcasecmp(argv[0], "help") == 0) {

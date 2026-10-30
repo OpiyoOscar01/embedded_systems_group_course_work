@@ -168,18 +168,20 @@ show offline.
 
 **All three running together**
 
-- `scan in A1B2C3D4` at the hub opens the entry door (servo), lights the green
-  LED, beeps, increments occupancy and publishes an `access` event.
-- The second `scan in A1B2C3D4` is denied by anti-passback (red LED, longer
-  beep). `scan out A1B2C3D4` releases it.
-- `sim motion on` then `sim lux 50` on a room turns that room's lamp on.
-  `sim lux 900` keeps it off (daylight); `sim clear` returns to real sensors.
-- `lights 1 on` on the hub publishes a command; Room 1 logs the command and
-  turns its lamp on.
-- `nodes`, `rooms`, `alerts`, `logs` on the hub show the live system state.
+- `cocis scan in A1B2C3D4` at the hub opens the entry door (servo), lights the
+  green LED, beeps, increments occupancy and publishes an `access` event.
+- The second `cocis scan in A1B2C3D4` is denied by anti-passback (red LED,
+  longer beep). `cocis scan out A1B2C3D4` releases it.
+- `cocis sim motion on` then `cocis sim lux 50` on a room turns that room's
+  lamp on. `cocis sim lux 900` keeps it off (daylight); `cocis sim clear`
+  returns to real sensors.
+- `cocis lights 1 on` on the hub publishes a command; Room 1 logs the command
+  and turns its lamp on.
+- `cocis nodes`, `cocis rooms`, `cocis alerts`, `cocis logs` on the hub show
+  the live system state.
 - Pressing the red emergency button on the hub latches emergency mode, opens
-  both doors and captures a roll-call. Clear it with `emergency off` (login
-  as admin/security first).
+  both doors and captures a roll-call. Clear it with `cocis emergency off`
+  (login as admin/security first).
 
 If the current time is outside opening hours (Mon-Fri 07:00-21:00, Sat
 08:00-14:00, Sun closed), access is denied and room lamps stay off. Check
@@ -215,10 +217,11 @@ as a real reader.
 1. Start the simulation and wait for the prompt (`HUB>`, `R1>` or `R2>`).
 2. Click inside the Wokwi serial monitor, type a command and press **Enter**.
 3. ESP-IDF log lines and command output share the monitor; this is normal.
-4. Type `help` to see the commands for the current node.
+4. Type `cocis help` to see the commands for the current node.
 
-Commands are line-based and case-insensitive for the command name. Empty
-lines are ignored.
+Commands are line-based and case-insensitive. Use the git-style `cocis`
+prefix (`cocis status`) or the bare form (`status`); both work. Empty lines
+are ignored.
 
 ### Hub login and roles
 
@@ -231,8 +234,8 @@ Default accounts are created on first boot:
 | `viewer` | `viewer123` | VIEWER | Read-only status |
 
 ```text
-login security security123
-whoami
+cocis login security security123
+cocis whoami
 ```
 
 Sessions idle out after 120 s; log in again if a command says
@@ -315,18 +318,18 @@ Run these in order with all three terminals online:
 
 | # | Action | Expected |
 |---|---|---|
-| D1 | `login security security123` then `scan in A1B2C3D4` | Access granted, occupancy 1 |
-| D2 | `scan in A1B2C3D4` again | Anti-passback denial |
-| D3 | `scan in BAD00001` three times | Brute-force alert in `alerts` |
-| D4 | Admin runs `schedule close <today>`, then `scan in A1B2C3D4` | Outside-hours denial and rooms suppress lamps; restore with `schedule set <today> 00:00 23:59` |
-| D5 | Scan someone in, then admin runs `schedule close <today>` | Closing sweep alert + roll-call; `release <uid>` frees them; restore the window afterwards |
-| D6 | Room 1: `sim motion on`, `sim lux 50` | Lamp on, energy starts counting |
-| D7 | Room 1: `sim motion off`, wait 5 min | 30 s blink then lamp off |
-| D8 | Room 1: `sim lux 900` with motion | Daylight hold, lamp stays off |
-| D9 | Room 2 closed + `sim motion on` | Intrusion alert at the hub |
+| D1 | `cocis login security security123` then `cocis scan in A1B2C3D4` | Access granted, occupancy 1 |
+| D2 | `cocis scan in A1B2C3D4` again | Anti-passback denial |
+| D3 | `cocis scan in BAD00001` three times | Brute-force alert in `cocis alerts` |
+| D4 | Admin runs `cocis schedule close <today>`, then `cocis scan in A1B2C3D4` | Outside-hours denial and rooms suppress lamps; restore with `cocis schedule set <today> 00:00 23:59` |
+| D5 | Scan someone in, then admin runs `cocis schedule close <today>` | Closing sweep alert + roll-call; `cocis release <uid>` frees them; restore the window afterwards |
+| D6 | Room 1: `cocis sim motion on`, `cocis sim lux 50` | Lamp on, energy starts counting |
+| D7 | Room 1: `cocis sim motion off`, wait 5 min | 30 s blink then lamp off |
+| D8 | Room 1: `cocis sim lux 900` with motion | Daylight hold, lamp stays off |
+| D9 | Room 2 closed + `cocis sim motion on` | Intrusion alert at the hub |
 | D10 | Press hub emergency button | Both doors release, roll-call captured |
 | D11 | Stop Wi-Fi/MQTT (or power one room) | Hub shows room offline; local control continues |
-| D12 | Edit an access CSV row, then `verify` | Tamper detected |
+| D12 | Edit an access CSV row, then `cocis verify` | Tamper detected |
 
 Restore normal operation with `schedule set mon 08:00 21:00`,
 `emergency off`, and `sim clear` on the rooms.
