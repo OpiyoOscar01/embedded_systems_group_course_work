@@ -17,3 +17,9 @@ __pycache__/
 
 # Host tests
 tests/host/build/
+
+# Local agent instructions
+AGENTS.md
+
+# Local Room 2 simulation copy
+/room_node_room2/
