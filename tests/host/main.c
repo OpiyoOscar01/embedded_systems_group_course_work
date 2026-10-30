@@ -13,6 +13,7 @@ int g_failures = 0;
 
 void test_types(void);
 void test_log_chain(void);
+void test_log_chain_hex(void);
 void test_log_chain_limits(void);
 void test_schedule_defaults(void);
 void test_schedule_time_validity(void);
@@ -20,6 +21,7 @@ void test_schedule_weekday_math(void);
 void test_schedule_parse(void);
 void test_schedule_edit(void);
 void test_schedule_holidays(void);
+void test_schedule_json(void);
 void test_proto_event_ids(void);
 void test_proto_encode_decode(void);
 void test_proto_escaping(void);
@@ -41,6 +43,7 @@ void test_door_defaults_and_wrap(void);
 void test_light_occupancy_and_warning(void);
 void test_light_daylight(void);
 void test_light_override(void);
+void test_light_override_control(void);
 void test_daylight_hysteresis(void);
 void test_energy_accounting(void);
 void test_auth_login(void);
@@ -62,6 +65,7 @@ int main(void)
 
     test_types();
     test_log_chain();
+    test_log_chain_hex();
     test_log_chain_limits();
     test_schedule_defaults();
     test_schedule_time_validity();
@@ -69,6 +73,7 @@ int main(void)
     test_schedule_parse();
     test_schedule_edit();
     test_schedule_holidays();
+    test_schedule_json();
     test_proto_event_ids();
     test_proto_encode_decode();
     test_proto_escaping();
@@ -90,6 +95,7 @@ int main(void)
     test_light_occupancy_and_warning();
     test_light_daylight();
     test_light_override();
+    test_light_override_control();
     test_daylight_hysteresis();
     test_energy_accounting();
     test_auth_login();

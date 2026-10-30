@@ -82,6 +82,33 @@ void test_light_daylight(void)
     CHECK_EQ(fsm.state, COCIS_LIGHT_ON);
 }
 
+void test_light_override_control(void)
+{
+    cocis_light_fsm_t fsm;
+    cocis_light_config_t cfg = test_config();
+    cocis_light_init(&fsm, &cfg);
+
+    cocis_light_override(&fsm, 0, 5000);
+    CHECK_EQ(fsm.state, COCIS_LIGHT_ON);
+    CHECK(cocis_light_update(&fsm, 1000, false, false));
+
+    /* Auto cancels the forced-on state; dark and vacant -> off. */
+    cocis_light_cancel_override(&fsm);
+    CHECK(!cocis_light_update(&fsm, 2000, false, false));
+    CHECK_EQ(fsm.state, COCIS_LIGHT_OFF);
+
+    /* Forced off wins over a pending override and occupancy. */
+    CHECK(cocis_light_update(&fsm, 3000, true, false));
+    cocis_light_override(&fsm, 3500, 5000);
+    cocis_light_force_off(&fsm);
+    CHECK_EQ(fsm.state, COCIS_LIGHT_OFF);
+    CHECK(!cocis_light_update(&fsm, 4000, false, false));
+
+    /* Motion after a forced off starts a new automatic cycle. */
+    CHECK(cocis_light_update(&fsm, 5000, true, false));
+    CHECK_EQ(fsm.state, COCIS_LIGHT_ON);
+}
+
 void test_light_override(void)
 {
     cocis_light_fsm_t fsm;

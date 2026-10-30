@@ -27,13 +27,15 @@ Wokwi share links, broker details and spike outcomes. Keep this current.
 | S2 | Two Wokwi projects exchange MQTT via Wokwi-GUEST | pending |
 | S3 | SNTP returns time | pending |
 | S4 | SD card mounts with FATFS, append/read | pending |
-| S5 | RFID source (part / custom chip / console) | pending |
-| S6 | Servo, PIR, LDR, relay, OLED, RTC behave | pending |
+| S5 | RFID source (part / custom chip / console) | code path ready: serial `scan in|out <uid>` reaches the HAL |
+| S6 | Servo, PIR, LDR, relay, buzzer, SD behave | diagrams wired; Wokwi run pending |
 
 ## Part substitutions
 
 | Part | Substitute | Note |
 |---|---|---|
-| RFID reader | console `sim scan <entry|exit> <uid>` behind HAL | if no reliable Wokwi part |
+| RFID reader | console `scan in|out <uid>` behind HAL | no reliable Wokwi part; scan injection is the demo path |
 | Door mechanism | servo | angle logged |
-| Mains lamp | LED via relay | |
+| Mains lamp | relay module (indicator LED on room node) | Wokwi cannot model mains safely |
+| OLED status display | serial CLI `status` / `diag` | OLED deferred (I-24) |
+| RTC | SNTP with EAT conversion | Wokwi has no RTC part |

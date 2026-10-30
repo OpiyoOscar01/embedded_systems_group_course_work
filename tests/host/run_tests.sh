@@ -38,6 +38,7 @@ gcc -std=c11 -Wall -Wextra -Werror -O1 \
     "$ROOT/tests/host/test_alerts.c" \
     "$ROOT/common/cocis_log_chain/chain.c" \
     "$ROOT/common/cocis_time/schedule.c" \
+    "$ROOT/common/cocis_time/schedule_json.c" \
     "$ROOT/common/cocis_proto/proto.c" \
     "$ROOT/entrance_node/components/user_registry/user_registry.c" \
     "$ROOT/entrance_node/components/occupancy/occupancy.c" \

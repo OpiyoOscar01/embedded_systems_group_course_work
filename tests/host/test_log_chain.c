@@ -57,6 +57,24 @@ void test_log_chain(void)
     CHECK_EQ(cocis_chain_verify(fake_hash, genesis, records, 3), 2);
 }
 
+void test_log_chain_hex(void)
+{
+    const uint8_t bytes[4] = {0x00, 0x0F, 0xA5, 0xFF};
+    char hex[9];
+    cocis_hex_encode(bytes, sizeof(bytes), hex);
+    CHECK(strcmp(hex, "000fa5ff") == 0);
+
+    uint8_t decoded[4];
+    CHECK(cocis_hex_decode(hex, decoded, sizeof(decoded)));
+    CHECK(memcmp(decoded, bytes, sizeof(bytes)) == 0);
+
+    /* Uppercase input is accepted; wrong length or bad digits are not. */
+    CHECK(cocis_hex_decode("000FA5FF", decoded, sizeof(decoded)));
+    CHECK(!cocis_hex_decode("000", decoded, sizeof(decoded)));
+    CHECK(!cocis_hex_decode("0000000g", decoded, sizeof(decoded)));
+    CHECK(!cocis_hex_decode(NULL, decoded, sizeof(decoded)));
+}
+
 void test_log_chain_limits(void)
 {
     uint8_t prev[COCIS_HASH_LEN] = {0};

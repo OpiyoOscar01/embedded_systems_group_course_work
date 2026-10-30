@@ -75,5 +75,11 @@ void cocis_light_override(cocis_light_fsm_t *fsm, uint32_t now_ms, uint32_t dura
 /** Remaining override time, or 0 when no override is active. */
 uint32_t cocis_light_override_remaining_ms(const cocis_light_fsm_t *fsm, uint32_t now_ms);
 
+/** Cancel an override and return to automatic control. */
+void cocis_light_cancel_override(cocis_light_fsm_t *fsm);
+
+/** Force the lamp off immediately and end the occupancy hold. */
+void cocis_light_force_off(cocis_light_fsm_t *fsm);
+
 /** True when the lamp is in the pre-off warning (blinking) phase. */
 bool cocis_light_is_warning(const cocis_light_fsm_t *fsm);

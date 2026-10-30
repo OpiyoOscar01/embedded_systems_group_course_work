@@ -1,0 +1,83 @@
+CoCIS Smart Control and Monitoring System - Todo
+Updated 2026-10-30. Source of truth: docs/IMPLEMENTATION_GUIDE.md.
+
+Legend: [x] done, [~] code done / evidence pending, [-] deferred, [ ] not started.
+
+IMPLEMENTATION: COMPLETE
+Host tests pass (`bash tests/host/run_tests.sh`). Firmware build and Wokwi
+evidence are intentionally deferred until the next step.
+
+Foundation and shared components
+[x] I-00 repo split and smoke test
+[x] I-07 cocis_types
+[x] I-08 cocis_log_chain
+[x] I-09 cocis_time (SNTP, EAT, schedule + JSON)
+[x] I-10 cocis_proto (envelope, topics, ids, dedupe)
+[x] I-33 Wi-Fi station + reconnect
+[x] I-34 MQTT QoS1 + LWT + retained status
+[x] I-35 envelope pub/sub + idempotency
+[x] I-38 store-and-forward ring buffer
+[x] I-39 retained versioned schedule propagation
+
+Entrance hub
+[x] I-11 hub HAL, pin map, diag
+[x] I-12 user registry
+[x] I-13 scan injection + duplicate debounce
+[x] I-14 access decision, servo, LED/buzzer
+[x] I-15 occupancy + anti-passback + NVS persistence
+[x] I-16 door FSM + exit anomaly
+[x] I-17 schedule model + NVS + outside-hours denial
+[x] I-18 storage single writer, daily CSV, hash chain, verify
+[x] I-19 auth PBKDF2, roles, lockout, idle session
+[x] I-20 CLI core (help/login/status/occupancy/rooms/lights/diag)
+[x] I-21 CLI users/schedule/config/alerts/logs/audit views
+[x] I-22 emergency button, emergency mode, roll-call
+[x] I-23 brute-force and tamper alerts
+[x] I-24 hub SSD1306 status summary (optional, falls back to CLI)
+[x] I-25 audited release <uid>
+[x] S-01 hub CLI diag/nodes/rooms/alerts/release/config
+[x] S-03 hub room tracking, 15 s offline flag, closing sweep, release
+
+Room nodes
+[x] I-26 room HAL (PIR, LDR, relay, LEDs, override)
+[x] I-27 lighting FSM
+[x] I-28 pre-off warning blink
+[x] I-29 daylight hysteresis
+[x] I-30 manual override
+[x] I-31 energy accounting + energy command
+[x] I-36 room telemetry/events + hub room cache
+[x] I-37 heartbeat, 15 s offline flag, nodes command
+[x] I-41 intrusion detection, lamps stay off
+[x] I-42 closing-time sweep + alert
+[x] I-43 temporary/expiring cards
+[x] I-44 energy summary export (logs/export/energy_summary.csv)
+[x] S-02 room CLI diag + sim motion/lux/light
+[x] S-04 room schedule subscription + intrusion alert
+
+Diagrams and design notes
+[x] S-05 both diagram.json wired: LEDs, buttons, PIR, LDR, relay,
+        servos, buzzer, SSD1306, SD (pin names checked against Wokwi docs)
+[x] I-45 stretch items documented as future work (guide 6a)
+[-] I-40 leased distributed lock deferred; design note in guide 6a
+
+Still needs evidence (no code left)
+[~] I-01 two-project MQTT spike
+[~] I-02 SD card append/read spike
+[~] I-03 SNTP + EAT spike
+[~] I-04 console scan injection behind HAL
+[~] I-05 peripheral spike (servo, PIR, LDR, relay, buzzer, SSD1306, SD)
+[~] I-06 broker/prefix/substitutions recorded; Wokwi share links pending
+[~] I-32 offline autonomy verified by code review only
+[~] I-46 host tests pass; full TC-01.. catalogue needs Wokwi
+[ ] S-06 build both projects, then run demos D1-D12 in Wokwi
+[ ] I-47 30 min soak + watchdog recovery + reboot consistency
+[ ] I-48 resource check (heap, stacks, no ISR malloc)
+[ ] I-49 rehearse demo script, record evidence
+[ ] S-07 complete docs/links.md with share links and demo evidence
+[ ] S-08 final report, contribution statement, tag v1.0
+[ ] Fix git push credentials (currently authenticating as Custospark)
+
+Next actions
+1. `idf.py build` in entrance_node and room_node.
+2. Open each project's wokwi.toml/diagram.json, run D1-D12 with the serial CLI.
+3. Record results in docs/links.md and the guide progress log.

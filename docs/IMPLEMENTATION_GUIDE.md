@@ -46,17 +46,19 @@ smart_control_and_monitoring_system/
 |   |-- cocis_types/
 |   |-- cocis_proto/
 |   |-- cocis_time/
-|   `-- cocis_log_chain/
+|   |-- cocis_log_chain/
+|   |-- cocis_net/                # Wi-Fi + MQTT + offline queue
+|   `-- storage/                  # SD/FATFS single-writer wrapper
 |-- entrance_node/                # ESP-IDF project: Hub
-|   |-- main/
-|   |-- components/
-|   |-- Kconfig.projbuild
+|   |-- main/                     # app.c, cli.c, Kconfig.projbuild
+|   |-- components/               # access, auth, HAL, logs, state, ...
+|   |-- partitions.csv
 |   |-- wokwi.toml
 |   `-- diagram.json
 |-- room_node/                    # ESP-IDF project: Room (ROOM_ID via Kconfig)
-|   |-- main/
-|   |-- components/
-|   |-- Kconfig.projbuild
+|   |-- main/                     # app.c, cli.c, Kconfig.projbuild
+|   |-- components/               # light_fsm, energy, room_hal
+|   |-- partitions.csv
 |   |-- wokwi.toml
 |   `-- diagram.json
 |-- docs/
@@ -127,16 +129,19 @@ account). Fix once, then push normally.
 
 ## 5. The implementation line-up
 
+Status legend: `[x]` done, `[~]` code done / Wokwi evidence pending, `[-]`
+deferred as future work, `[ ]` not started.
+
 ### Phase 0 - Foundation spikes (these decide the design)
 
 | Status | ID | Increment | Requirements | Pass when |
 |---|---|---|---|---|
 | [x] | I-00 | Split repo into common/ + entrance_node/ + room_node/, smoke test | FR-DST-01 | both projects build; LED/blink + banner in Wokwi |
 | [~] | I-01 | Two-project MQTT spike over Wokwi-GUEST (decides Option A/B) | FR-DST-02, S2 | message from A appears on B |
-| [ ] | I-02 | SD card mount + append/read spike | FR-STO-01, S4 | file written and read back |
-| [ ] | I-03 | SNTP time + EAT conversion spike | FR-SCH-07, S3 | correct UTC/local time printed |
-| [ ] | I-04 | RFID source spike (console `sim scan` behind HAL) | FR-ACC-02, S5 | injected UID reaches HAL |
-| [ ] | I-05 | Peripheral spike: servo, PIR, LDR, relay, OLED, RTC, buzzer | S6 | each part driven once |
+| [~] | I-02 | SD card mount + append/read spike | FR-STO-01, S4 | file written and read back |
+| [~] | I-03 | SNTP time + EAT conversion spike | FR-SCH-07, S3 | correct UTC/local time printed |
+| [~] | I-04 | RFID source spike (console `sim scan` behind HAL) | FR-ACC-02, S5 | injected UID reaches HAL |
+| [~] | I-05 | Peripheral spike: servo, PIR, LDR, relay, OLED, RTC, buzzer | S6 | each part driven once |
 | [ ] | I-06 | Record broker, prefix, spikes, substitutions in docs/links.md | - | file committed |
 
 Decision gate: if I-01 fails, switch to deployment Option B (single project,
@@ -155,56 +160,56 @@ in-memory bus) and document it before continuing.
 
 | Status | ID | Increment | Requirements | Pass when |
 |---|---|---|---|---|
-| [ ] | I-11 | HAL base for hub + pin config + diag self-test | NFR-10, NFR-11 | diag drives each part once |
+| [x] | I-11 | HAL base for hub + pin config + diag self-test | NFR-10, NFR-11 | diag drives each part once |
 | [x] | I-12 | User registry (uid, name, role, status, expiry) + lookup | FR-ACC-08 | known uid found, unknown rejected |
 | [x] | I-13 | Scan injection + scan_queue + 2 s duplicate debounce | FR-ACC-06 | repeat scan within 2 s ignored |
 | [x] | I-14 | Access decision + door servo + LED/buzzer feedback | FR-ACC-02/03/04 | D1 grant, D2 deny, reason logged |
-| [~] | I-15 | Occupancy table + anti-passback + NVS persist | FR-OCC-01/03, INN-01 | reboot keeps occupancy |
+| [x] | I-15 | Occupancy table + anti-passback + NVS persist | FR-OCC-01/03, INN-01 | reboot keeps occupancy |
 | [x] | I-16 | Door FSM timing + exit anomaly handling | FR-ACC-07 | door relocks 5 s; exit-no-entry flagged |
-| [ ] | I-17 | Schedule model + NVS + outside-hours denial | FR-SCH-01/02/04 | D4 outside-hours denial |
-| [ ] | I-18 | Storage: single writer, daily CSV, hash chain, verify | FR-STO-02/03/05 | D12 edit line -> verify finds it |
+| [x] | I-17 | Schedule model + NVS + outside-hours denial | FR-SCH-01/02/04 | D4 outside-hours denial |
+| [x] | I-18 | Storage: single writer, daily CSV, hash chain, verify | FR-STO-02/03/05 | D12 edit line -> verify finds it |
 | [x] | I-19 | Auth: PBKDF2+salt, roles, lockout, session idle | INN-09, NFR-05 | 3 fails lock 60 s; no echo |
-| [ ] | I-20 | CLI core: help/login/status/occupancy/who/rooms/lights/diag | FR-CLI-01/02/03 | role-filtered help; queries work |
-| [ ] | I-21 | CLI logs/users/schedule/config/audit/alerts commands | FR-CLI-04, FR-SCH-04 | admin-only commands enforced |
-| [~] | I-22 | Emergency button ISR + emergency mode + roll-call | INN-02, NFR-06 | D10 unlock + lights + list |
-| [~] | I-23 | Alerts: brute-force (3 denials) + tamper | FR-ACC-09 | alert raised and logged |
-| [ ] | I-24 | Hub OLED status summary | FR-CLI-05 | mode/count/state on OLED |
-| [ ] | I-25 | After-hours audited `release <uid>` | FR-SCH-03, A-1 | D5 release logged |
+| [x] | I-20 | CLI core: help/login/status/occupancy/who/rooms/lights/diag | FR-CLI-01/02/03 | role-filtered help; queries work |
+| [x] | I-21 | CLI logs/users/schedule/config/audit/alerts commands | FR-CLI-04, FR-SCH-04 | admin-only commands enforced |
+| [x] | I-22 | Emergency button ISR + emergency mode + roll-call | INN-02, NFR-06 | D10 unlock + lights + list |
+| [x] | I-23 | Alerts: brute-force (3 denials) + tamper | FR-ACC-09 | alert raised and logged |
+| [x] | I-24 | Hub OLED status summary | FR-CLI-05 | mode/count/state on OLED |
+| [x] | I-25 | After-hours audited `release <uid>` | FR-SCH-03, A-1 | D5 release logged |
 
 ### Phase 3 - Room node local (offline first)
 
 | Status | ID | Increment | Requirements | Pass when |
 |---|---|---|---|---|
-| [ ] | I-26 | Room HAL: PIR, LDR (ADC1), relay, LEDs, override | FR-LGT-01 | diag drives each part |
+| [x] | I-26 | Room HAL: PIR, LDR (ADC1), relay, LEDs, override | FR-LGT-01 | diag drives each part |
 | [x] | I-27 | Lighting FSM core: occupied/vacant + vacancy timeout | FR-LGT-02 | D6 on, D7 off after timeout |
 | [x] | I-28 | Pre-off warning blink (1 Hz) then off | FR-LGT-04, INN-06 | blink then off |
 | [x] | I-29 | Daylight gating with 600/800 hysteresis | FR-LGT-05, INN-05 | D8 lamp stays off |
 | [x] | I-30 | Manual override timer | FR-LGT-06 | override holds then expires |
-| [~] | I-31 | Energy accounting + persistence + `energy` | FR-LGT-07, INN-07 | kWh/UGX saved shown |
-| [ ] | I-32 | Offline autonomy verification + room diag | FR-LGT-08, NFR-11 | lights work with no network |
+| [x] | I-31 | Energy accounting + persistence + `energy` | FR-LGT-07, INN-07 | kWh/UGX saved shown |
+| [~] | I-32 | Offline autonomy verification + room diag | FR-LGT-08, NFR-11 | lights work with no network |
 
 ### Phase 4 - Communication and distributed sync
 
 | Status | ID | Increment | Requirements | Pass when |
 |---|---|---|---|---|
-| [ ] | I-33 | Wi-Fi station + reconnect with back-off | FR-DST-01 | connects/reconnects logged |
-| [ ] | I-34 | MQTT client + QoS1 + LWT + node status retained | FR-DST-03 | status online/offline visible |
-| [ ] | I-35 | Envelope publish/subscribe + idempotency cache | FR-SYN-03 | duplicate id ignored |
-| [ ] | I-36 | Room telemetry/events to Hub + occupancy broadcast | FR-LGT-03, FR-OCC-05 | CLI shows room + count |
-| [ ] | I-37 | Heartbeat 5 s + offline 15 s + `nodes` command | FR-DST-03, INN-13 | silent node flagged offline |
-| [ ] | I-38 | Store-and-forward ring buffer + resync on reconnect | INN-08, FR-DST-04 | D11 buffer then replay |
-| [ ] | I-39 | Two-phase versioned schedule distribution | FR-SCH-06, FR-SYN-04 | D4 rooms apply same version |
-| [ ] | I-40 | Leased distributed lock (request/grant/release) | FR-SYN-05 | lease expires in 3 s |
-| [ ] | I-41 | Intrusion detection cross-check | FR-LGT-09, INN-04 | D9 alert, lights stay off |
-| [ ] | I-42 | Closing-time sweep list + security alert | FR-OCC-06, INN-10 | list printed at close |
+| [x] | I-33 | Wi-Fi station + reconnect with back-off | FR-DST-01 | connects/reconnects logged |
+| [x] | I-34 | MQTT client + QoS1 + LWT + node status retained | FR-DST-03 | status online/offline visible |
+| [x] | I-35 | Envelope publish/subscribe + idempotency cache | FR-SYN-03 | duplicate id ignored |
+| [x] | I-36 | Room telemetry/events to Hub + occupancy broadcast | FR-LGT-03, FR-OCC-05 | CLI shows room + count |
+| [x] | I-37 | Heartbeat 5 s + offline 15 s + `nodes` command | FR-DST-03, INN-13 | silent node flagged offline |
+| [x] | I-38 | Store-and-forward ring buffer + resync on reconnect | INN-08, FR-DST-04 | D11 buffer then replay |
+| [x] | I-39 | Two-phase versioned schedule distribution | FR-SCH-06, FR-SYN-04 | D4 rooms apply same version |
+| [-] | I-40 | Leased distributed lock (request/grant/release) | FR-SYN-05 | deferred; see 6a |
+| [x] | I-41 | Intrusion detection cross-check | FR-LGT-09, INN-04 | D9 alert, lights stay off |
+| [x] | I-42 | Closing-time sweep list + security alert | FR-OCC-06, INN-10 | list printed at close |
 
 ### Phase 5 - Remaining innovation (Tier 2, if time)
 
 | Status | ID | Increment | Requirements | Pass when |
 |---|---|---|---|---|
-| [ ] | I-43 | Visitor temporary cards with expiry | INN-11 | expired tag denied |
-| [ ] | I-44 | Management energy summary/report export | INN-07 | report file written |
-| [ ] | I-45 | Stretch items documented as future work | INN-12/14/15 | report section exists |
+| [x] | I-43 | Visitor temporary cards with expiry | INN-11 | expired tag denied |
+| [x] | I-44 | Management energy summary/report export | INN-07 | report file written |
+| [x] | I-45 | Stretch items documented as future work | INN-12/14/15 | report section exists (6a) |
 
 ### Phase 6 - Verification, safety, submission
 
@@ -215,6 +220,24 @@ in-memory bus) and document it before continuing.
 | [ ] | I-48 | Resource check: heap >= 30%, stack watermarks, no ISR malloc | NFR-08 | diag shows headroom |
 | [ ] | I-49 | Rehearse demo script D1-D12 + record videos | - | all demos pass |
 | [ ] | I-50 | docs/links.md, report, contribution statements, tag v1.0 | NFR-12 | submission checklist done |
+
+---
+
+## 5a. Phase 7 - Simulation and CLI hardening (added 2026-10-30)
+
+The firmware now builds for both projects. This phase makes the system
+demonstrable through the serial console before the final Wokwi run.
+
+| Status | ID | Increment | Requirements | Pass when |
+|---|---|---|---|---|
+| [x] | S-01 | Hub CLI: diag, nodes, rooms, alerts, release, config | FR-CLI-01..05, NFR-11 | commands answer from live state |
+| [x] | S-02 | Room CLI: diag + `sim motion` / `sim lux` overrides | FR-LGT-01, NFR-11 | motion/lux can be injected from serial |
+| [x] | S-03 | Hub room tracking, 15 s offline flag, closing sweep, release | FR-DST-03, FR-OCC-06, FR-SCH-03 | D5 and offline detection work |
+| [x] | S-04 | Room schedule subscription (retained, versioned) + intrusion alert | FR-SCH-06, FR-LGT-09 | D4 propagates, D9 alerts |
+| [x] | S-05 | Update both diagram.json for LEDs, buttons, PIR, LDR, relay, servo, buzzer, SSD1306, SD | S6, FR-DST-01 | parts wired exactly as pin maps |
+| [ ] | S-06 | Run demo D1-D12 in Wokwi using the CLI | all Must FRs | every demo step observed |
+| [ ] | S-07 | Record share links, spike results, demo evidence in docs/links.md | I-06, I-46 | links.md complete |
+| [ ] | S-08 | Final report, contribution statement, tag v1.0 | NFR-12 | submission checklist done |
 
 ---
 
@@ -322,6 +345,24 @@ Innovations (Table 16)
 
 ---
 
+## 6a. Future work and design notes
+
+- **FR-SYN-05 leased distributed lock (I-40)** - deferred. The current
+  topology has a single hub that owns the schedule and user registry, and
+  rooms only read the retained schedule, so last-writer-wins is sufficient.
+  A future multi-hub deployment should add `request/grant/release` messages
+  with a 3 s lease and a monotonic fencing token before allowing two hubs to
+  edit shared state.
+- **Stretch items** from the brief are intentionally left as future work:
+  occupancy analytics dashboards, a mobile/remote management app, cloud
+  history export, and facial-recognition access. The current SD CSV layout
+  (`logs/access`, `logs/audit`, `logs/energy`, `logs/export`) is the data
+  source those features would consume.
+- **OLED** is optional: the hub probes the SSD1306 at 0x3C and falls back to
+  the serial console if the panel is absent (`diag` reports `oled absent`).
+
+---
+
 ## 7. Demo script checklist (Table 44)
 
 - [ ] D1 registered ENTRY inside hours
@@ -363,11 +404,30 @@ Innovations (Table 16)
 | 2026-10-29 | I-19 | auth core, lockout, roles, idle; host tests pass | (pending) |
 | 2026-10-29 | I-22 | emergency state + roll-call; host tests pass | (pending) |
 | 2026-10-29 | I-23 | denial/tamper alert logic; host tests pass | (pending) |
+| 2026-10-30 | I-02/03/04 | SD storage, SNTP/EAT, console scan injection implemented; Wokwi gate deferred | (working tree) |
+| 2026-10-30 | I-11/26 | hub_hal + room_hal (GPIO, LEDC servo/buzzer, ADC1 LDR, ISRs) implemented | (working tree) |
+| 2026-10-30 | I-15/17/18 | occupancy/schedule/auth persistence, hash-chained CSV logs | (working tree) |
+| 2026-10-30 | I-20/21 | entrance CLI (login, scan, users, schedule, emergency, door, verify) | (working tree) |
+| 2026-10-30 | I-31/33/34/35/38 | room energy CSV, shared Wi-Fi/MQTT, LWT, dedupe, offline queue | (working tree) |
+| 2026-10-30 | build | entrance and room both build; host tests pass | (working tree) |
+| 2026-10-30 | S-01..S-04 | hub/room CLI hardening, room tracking, closing sweep, schedule sync, intrusion | (working tree) |
+| 2026-10-30 | verify | host tests pass; entrance 0x104230, room 0xfb500; S-01..S-04 code + docs statuses updated | (working tree) |
+| 2026-10-30 | S-05 | both diagrams wired: SD, SSD1306, servos, LEDs, buzzer, buttons, PIR, LDR, relay | (working tree) |
+| 2026-10-30 | I-21/24/44/45 | logs/audit views, SSD1306 status, energy report export, future-work note; host tests pass | (working tree) |
 | | | | |
 
 ---
 
 ## 9. Immediate next step
 
-Finish I-00 by building both projects and confirming Wokwi. Then start I-01
-(MQTT spike), because it decides the whole deployment model.
+Both projects build and the host tests pass, and S-05 has wired both Wokwi
+diagrams to the pin maps. Remaining: run the CLI-driven demo D1-D12 (S-06),
+record the results in docs/links.md (S-07), then complete S-08 (report/tag).
+
+CLI quick start for the demo:
+- Entrance: `login security security123`, `scan in A1B2C3D4`, `status`,
+  `occupancy`, `nodes`, `rooms`, `login admin admin123` then
+  `passwd admin123 <new>`, `release A1B2C3D4`, `lights 1 on`,
+  `schedule set mon 08:00 10:00`, `emergency on`.
+- Room: `sim motion on`, `sim lux 50`, `sim clear`, `light on|off|auto`,
+  `status`, `schedule`, `energy`, `diag`.

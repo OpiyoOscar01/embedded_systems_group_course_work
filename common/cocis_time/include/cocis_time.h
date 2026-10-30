@@ -85,6 +85,16 @@ cocis_schedule_state_t cocis_schedule_eval(const cocis_schedule_t *schedule,
 bool cocis_schedule_is_open(const cocis_schedule_t *schedule, bool time_valid,
                             int year, int month, int day, int hour, int minute);
 
+/*
+ * JSON (de)serialisation for the schedule, used for NVS `sched/json_blob`
+ * and /sdcard/config/schedule.json.
+ *
+ * Writer: returns the number of bytes written (excluding NUL) or -1.
+ * Parser: accepts unknown fields, requires version and days.
+ */
+int cocis_schedule_to_json(const cocis_schedule_t *schedule, char *buf, size_t buf_len);
+bool cocis_schedule_from_json(const char *json, cocis_schedule_t *schedule);
+
 /* Human readable state for logs and the console. */
 static inline const char *cocis_schedule_state_str(cocis_schedule_state_t state)
 {

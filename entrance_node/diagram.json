@@ -8,46 +8,195 @@
       "id": "esp",
       "top": 0,
       "left": 0,
-      "attrs": {}
+      "attrs": { "name": "Entrance Hub" }
+    },
+    {
+      "type": "wokwi-microsd-card",
+      "id": "sd",
+      "top": -60,
+      "left": 360,
+      "attrs": { "label": "Audit log card" }
+    },
+    {
+      "type": "board-ssd1306",
+      "id": "oled",
+      "top": -140,
+      "left": 620,
+      "attrs": { "label": "Status" }
     },
     {
       "type": "wokwi-led",
-      "id": "led_green",
+      "id": "entry_green",
       "top": 40,
-      "left": 200,
-      "attrs": { "color": "green" }
+      "left": 220,
+      "attrs": { "color": "green", "label": "Entry OK" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_entry_green",
+      "top": 45,
+      "left": 280,
+      "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-led",
-      "id": "led_red",
+      "id": "entry_red",
       "top": 90,
-      "left": 200,
-      "attrs": { "color": "red" }
+      "left": 220,
+      "attrs": { "color": "red", "label": "Entry deny" }
     },
     {
       "type": "wokwi-resistor",
-      "id": "r1",
-      "top": 50,
-      "left": 260,
+      "id": "r_entry_red",
+      "top": 95,
+      "left": 280,
       "attrs": { "value": "220" }
     },
     {
+      "type": "wokwi-led",
+      "id": "exit_green",
+      "top": 140,
+      "left": 220,
+      "attrs": { "color": "green", "label": "Exit OK" }
+    },
+    {
       "type": "wokwi-resistor",
-      "id": "r2",
-      "top": 100,
-      "left": 260,
+      "id": "r_exit_green",
+      "top": 145,
+      "left": 280,
       "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "exit_red",
+      "top": 190,
+      "left": 220,
+      "attrs": { "color": "red", "label": "Exit deny" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_exit_red",
+      "top": 195,
+      "left": 280,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo_entry",
+      "top": 0,
+      "left": 620,
+      "attrs": { "label": "Entry door" }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo_exit",
+      "top": 140,
+      "left": 620,
+      "attrs": { "label": "Exit door" }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzzer",
+      "top": 300,
+      "left": 360,
+      "attrs": { "volume": "0.1", "label": "Buzzer" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn_emergency",
+      "top": 380,
+      "left": 620,
+      "attrs": { "color": "red", "label": "Emergency" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_emergency",
+      "top": 385,
+      "left": 680,
+      "attrs": { "value": "10000" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn_tamper",
+      "top": 460,
+      "left": 620,
+      "attrs": { "color": "blue", "label": "Tamper" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_tamper",
+      "top": 465,
+      "left": 680,
+      "attrs": { "value": "10000" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn_passage",
+      "top": 540,
+      "left": 620,
+      "attrs": { "color": "green", "label": "Passage" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_passage",
+      "top": 545,
+      "left": 680,
+      "attrs": { "value": "10000" }
     }
   ],
   "connections": [
-    [ "esp:D2", "led_green:A", "green", [] ],
-    [ "led_green:C", "r1:1", "black", [] ],
-    [ "r1:2", "esp:GND.1", "black", [] ],
-    [ "esp:D4", "led_red:A", "red", [] ],
-    [ "led_red:C", "r2:1", "black", [] ],
-    [ "r2:2", "esp:GND.1", "black", [] ],
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
-    [ "esp:RX", "$serialMonitor:TX", "", [] ]
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+
+    [ "sd:VCC", "esp:3V3", "red", [] ],
+    [ "sd:GND", "esp:GND.1", "black", [] ],
+    [ "sd:CS", "esp:5", "orange", [] ],
+    [ "sd:SCK", "esp:18", "blue", [] ],
+    [ "sd:DI", "esp:23", "green", [] ],
+    [ "sd:DO", "esp:19", "purple", [] ],
+
+    [ "oled:VCC", "esp:3V3", "red", [] ],
+    [ "oled:GND", "esp:GND.1", "black", [] ],
+    [ "oled:SDA", "esp:21", "blue", [] ],
+    [ "oled:SCL", "esp:22", "yellow", [] ],
+
+    [ "esp:32", "entry_green:A", "green", [] ],
+    [ "entry_green:C", "r_entry_green:1", "black", [] ],
+    [ "r_entry_green:2", "esp:GND.1", "black", [] ],
+    [ "esp:33", "entry_red:A", "red", [] ],
+    [ "entry_red:C", "r_entry_red:1", "black", [] ],
+    [ "r_entry_red:2", "esp:GND.1", "black", [] ],
+    [ "esp:16", "exit_green:A", "green", [] ],
+    [ "exit_green:C", "r_exit_green:1", "black", [] ],
+    [ "r_exit_green:2", "esp:GND.1", "black", [] ],
+    [ "esp:17", "exit_red:A", "red", [] ],
+    [ "exit_red:C", "r_exit_red:1", "black", [] ],
+    [ "r_exit_red:2", "esp:GND.1", "black", [] ],
+
+    [ "esp:13", "servo_entry:PWM", "yellow", [] ],
+    [ "servo_entry:V+", "esp:3V3", "red", [] ],
+    [ "servo_entry:GND", "esp:GND.1", "black", [] ],
+    [ "esp:14", "servo_exit:PWM", "yellow", [] ],
+    [ "servo_exit:V+", "esp:3V3", "red", [] ],
+    [ "servo_exit:GND", "esp:GND.1", "black", [] ],
+
+    [ "esp:4", "buzzer:2", "orange", [] ],
+    [ "buzzer:1", "esp:GND.1", "black", [] ],
+
+    [ "esp:34", "btn_emergency:1", "green", [] ],
+    [ "btn_emergency:2", "esp:GND.1", "black", [] ],
+    [ "esp:34", "r_emergency:1", "blue", [] ],
+    [ "r_emergency:2", "esp:3V3", "red", [] ],
+
+    [ "esp:39", "btn_tamper:1", "green", [] ],
+    [ "btn_tamper:2", "esp:GND.1", "black", [] ],
+    [ "esp:39", "r_tamper:1", "blue", [] ],
+    [ "r_tamper:2", "esp:3V3", "red", [] ],
+
+    [ "esp:35", "btn_passage:1", "green", [] ],
+    [ "btn_passage:2", "esp:3V3", "red", [] ],
+    [ "esp:35", "r_passage:1", "blue", [] ],
+    [ "r_passage:2", "esp:GND.1", "black", [] ]
   ],
   "dependencies": {}
 }

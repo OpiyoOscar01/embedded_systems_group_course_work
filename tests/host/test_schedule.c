@@ -8,6 +8,8 @@
 #include "cocis_time.h"
 #include "test_util.h"
 
+#include <string.h>
+
 void test_schedule_defaults(void)
 {
     cocis_schedule_t s;
@@ -89,6 +91,55 @@ void test_schedule_edit(void)
 
     cocis_schedule_close_day(&s, COCIS_WEEKDAY_WED);
     CHECK_EQ(cocis_schedule_eval(&s, true, 2026, 10, 28, 12, 0), COCIS_SCHED_CLOSED_WEEKDAY);
+}
+
+void test_schedule_json(void)
+{
+    cocis_schedule_t original;
+    cocis_schedule_default(&original);
+    original.version = 7;
+    CHECK(cocis_schedule_set_day(&original, COCIS_WEEKDAY_WED, "09:00", "17:00"));
+    CHECK(cocis_schedule_add_holiday(&original, "2026-12-25"));
+
+    char json[512];
+    int length = cocis_schedule_to_json(&original, json, sizeof(json));
+    CHECK(length > 0);
+    CHECK(strstr(json, "\"version\":7") != NULL);
+    CHECK(strstr(json, "\"sun\":null") != NULL);
+    CHECK(strstr(json, "\"2026-12-25\"") != NULL);
+
+    cocis_schedule_t parsed;
+    CHECK(cocis_schedule_from_json(json, &parsed));
+    CHECK_EQ(parsed.version, 7);
+    CHECK_EQ(parsed.holiday_count, 1);
+    CHECK(strcmp(parsed.holidays[0], "2026-12-25") == 0);
+    CHECK(parsed.days[COCIS_WEEKDAY_SUN].closed);
+    CHECK_EQ(parsed.days[COCIS_WEEKDAY_WED].open_min, 9 * 60);
+    CHECK_EQ(parsed.days[COCIS_WEEKDAY_WED].close_min, 17 * 60);
+    CHECK_EQ(parsed.days[COCIS_WEEKDAY_MON].open_min, 7 * 60);
+
+    /* Whitespace, missing days and unknown fields are tolerated. */
+    const char *text =
+        " { \"version\" : 3 , \"days\" : { \"mon\" : [ \"08:00\" , \"12:00\" ] ,"
+        " \"tue\" : null } , \"holidays\" : [ ] , \"note\" : {\"x\":1} } ";
+    CHECK(cocis_schedule_from_json(text, &parsed));
+    CHECK_EQ(parsed.version, 3);
+    CHECK_EQ(parsed.days[COCIS_WEEKDAY_MON].open_min, 8 * 60);
+    CHECK(parsed.days[COCIS_WEEKDAY_TUE].closed);
+    CHECK(parsed.days[COCIS_WEEKDAY_WED].closed);
+
+    /* Malformed or incomplete documents are rejected. */
+    CHECK(!cocis_schedule_from_json("{", &parsed));
+    CHECK(!cocis_schedule_from_json("{\"days\":{}}", &parsed));
+    CHECK(!cocis_schedule_from_json("{\"version\":1}", &parsed));
+    CHECK(!cocis_schedule_from_json(
+        "{\"version\":1,\"days\":{\"mon\":[\"10:00\",\"09:00\"]}}", &parsed));
+    CHECK(!cocis_schedule_from_json(
+        "{\"version\":1,\"days\":{},\"holidays\":[\"bad\"]}", &parsed));
+    CHECK(!cocis_schedule_from_json(NULL, &parsed));
+
+    /* The writer reports overflow instead of truncating. */
+    CHECK_EQ(cocis_schedule_to_json(&original, json, 8), -1);
 }
 
 void test_schedule_holidays(void)

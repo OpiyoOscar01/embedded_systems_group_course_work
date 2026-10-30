@@ -8,12 +8,116 @@
       "id": "esp",
       "top": 0,
       "left": 0,
-      "attrs": {}
+      "attrs": { "name": "Lecture Room" }
+    },
+    {
+      "type": "wokwi-pir-motion-sensor",
+      "id": "pir",
+      "top": 20,
+      "left": 360,
+      "attrs": { "label": "PIR" }
+    },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr",
+      "top": 180,
+      "left": 360,
+      "attrs": { "label": "LDR" }
+    },
+    {
+      "type": "wokwi-relay-module",
+      "id": "relay",
+      "top": 340,
+      "left": 360,
+      "attrs": { "label": "Lamp relay" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_occupied",
+      "top": 40,
+      "left": 220,
+      "attrs": { "color": "green", "label": "Occupied" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_occupied",
+      "top": 45,
+      "left": 280,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_lights",
+      "top": 100,
+      "left": 220,
+      "attrs": { "color": "yellow", "label": "Lamp on" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_lights",
+      "top": 105,
+      "left": 280,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_network",
+      "top": 160,
+      "left": 220,
+      "attrs": { "color": "blue", "label": "Network" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_network",
+      "top": 165,
+      "left": 280,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn_override",
+      "top": 520,
+      "left": 620,
+      "attrs": { "color": "green", "label": "Override" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_override",
+      "top": 525,
+      "left": 680,
+      "attrs": { "value": "10000" }
     }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
-    [ "esp:RX", "$serialMonitor:TX", "", [] ]
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+
+    [ "pir:VCC", "esp:3V3", "red", [] ],
+    [ "pir:GND", "esp:GND.1", "black", [] ],
+    [ "pir:OUT", "esp:13", "green", [] ],
+
+    [ "ldr:VCC", "esp:3V3", "red", [] ],
+    [ "ldr:GND", "esp:GND.1", "black", [] ],
+    [ "ldr:AO", "esp:34", "yellow", [] ],
+
+    [ "relay:VCC", "esp:3V3", "red", [] ],
+    [ "relay:GND", "esp:GND.1", "black", [] ],
+    [ "relay:IN", "esp:26", "orange", [] ],
+
+    [ "esp:25", "led_occupied:A", "green", [] ],
+    [ "led_occupied:C", "r_occupied:1", "black", [] ],
+    [ "r_occupied:2", "esp:GND.1", "black", [] ],
+    [ "esp:33", "led_lights:A", "yellow", [] ],
+    [ "led_lights:C", "r_lights:1", "black", [] ],
+    [ "r_lights:2", "esp:GND.1", "black", [] ],
+    [ "esp:32", "led_network:A", "blue", [] ],
+    [ "led_network:C", "r_network:1", "black", [] ],
+    [ "r_network:2", "esp:GND.1", "black", [] ],
+
+    [ "esp:14", "btn_override:1", "green", [] ],
+    [ "btn_override:2", "esp:GND.1", "black", [] ],
+    [ "esp:14", "r_override:1", "blue", [] ],
+    [ "r_override:2", "esp:3V3", "red", [] ]
   ],
   "dependencies": {}
 }

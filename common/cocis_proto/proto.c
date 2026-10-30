@@ -106,7 +106,8 @@ bool cocis_proto_make_id(char *out, size_t out_len,
         return false;
     }
 
-    int written = snprintf(out, out_len, "%s-%04u-%06u", src, boot, seq);
+    int written = snprintf(out, out_len, "%s-%04u-%06u", src,
+                           (unsigned)boot, (unsigned)seq);
     return written > 0 && (size_t)written < out_len;
 }
 

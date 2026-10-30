@@ -1,9 +1,21 @@
-/**
- * @file Kconfig.projbuild
- * @brief Entrance Hub configuration.
- * @author Opiyo Oscar
- * @requirements FR-DST-02, FR-DST-05
- */
+#
+# @file Kconfig.projbuild
+# @brief Room node configuration (room id + shared networking).
+# @author Opiyo Oscar
+# @requirements FR-DST-02, FR-DST-05
+#
+
+menu "CoCIS Room Node"
+
+config COCIS_ROOM_ID
+    int "Room number (1 or 2)"
+    range 1 2
+    default 1
+    help
+        Identifies this room node. Room 1 and Room 2 run the same firmware
+        and differ only by this configured value.
+
+endmenu
 
 menu "CoCIS Networking"
 

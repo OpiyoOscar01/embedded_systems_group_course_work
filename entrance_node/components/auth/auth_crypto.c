@@ -23,17 +23,12 @@ bool cocis_auth_pbkdf2_sha256(const char *password,
         return false;
     }
 
-    const mbedtls_md_info_t *md = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
-    if (md == NULL) {
-        return false;
-    }
-
-    int rc = mbedtls_pkcs5_pbkdf2_hmac(md,
-                                      (const unsigned char *)password,
-                                      strlen(password),
-                                      salt, salt_len,
-                                      iterations,
-                                      out_len, out);
+    int rc = mbedtls_pkcs5_pbkdf2_hmac_ext(MBEDTLS_MD_SHA256,
+                                          (const unsigned char *)password,
+                                          strlen(password),
+                                          salt, salt_len,
+                                          iterations,
+                                          (uint32_t)out_len, out);
     return rc == 0;
 }
 

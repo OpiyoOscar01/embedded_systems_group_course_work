@@ -43,3 +43,11 @@ int cocis_chain_verify(cocis_hash_fn hash,
 
 /* Target provider backed by mbedtls SHA-256. */
 void cocis_hash_sha256(const uint8_t *data, size_t len, uint8_t out[COCIS_HASH_LEN]);
+
+/*
+ * Hex helpers for the CSV hash columns.
+ * encode writes exactly 2*len lowercase hex characters plus a NUL.
+ * decode expects exactly 2*len characters and rejects anything else.
+ */
+void cocis_hex_encode(const uint8_t *in, size_t len, char *out);
+bool cocis_hex_decode(const char *in, uint8_t *out, size_t len);

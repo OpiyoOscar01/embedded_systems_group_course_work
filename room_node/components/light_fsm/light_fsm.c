@@ -160,6 +160,27 @@ uint32_t cocis_light_override_remaining_ms(const cocis_light_fsm_t *fsm, uint32_
     return fsm->override_until_ms - now_ms;
 }
 
+void cocis_light_cancel_override(cocis_light_fsm_t *fsm)
+{
+    if (fsm == NULL) {
+        return;
+    }
+    fsm->override_active = false;
+    fsm->override_until_ms = 0;
+}
+
+void cocis_light_force_off(cocis_light_fsm_t *fsm)
+{
+    if (fsm == NULL) {
+        return;
+    }
+    fsm->override_active = false;
+    fsm->override_until_ms = 0;
+    fsm->occupied = false;
+    fsm->state = COCIS_LIGHT_OFF;
+    fsm->relay_on = false;
+}
+
 bool cocis_light_is_warning(const cocis_light_fsm_t *fsm)
 {
     return fsm != NULL && fsm->state == COCIS_LIGHT_WARNING;
