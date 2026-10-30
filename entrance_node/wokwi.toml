@@ -2,3 +2,4 @@
 version = 1
 firmware = "build/entrance_node.bin"
 elf = "build/entrance_node.elf"
+rfc2217ServerPort = 4000

@@ -135,6 +135,46 @@ Both diagrams are already wired to the pin maps in
 `docs/IMPLEMENTATION_GUIDE.md`: SD card, SSD1306 status display, servos,
 LEDs, buzzer, buttons, PIR, LDR and relay.
 
+### Using your own terminal instead of the Wokwi monitor
+
+Each `wokwi.toml` exposes the simulated serial port over RFC2217, so you can
+use a normal terminal/CLI:
+
+| Terminal | RFC2217 URL |
+|---|---|
+| Entrance Hub | `rfc2217://localhost:4000` |
+| Room 1 | `rfc2217://localhost:4001` |
+| Room 2 | `rfc2217://localhost:4002` |
+
+Room 2 is a local copy, so set its port in `room_node_room2/wokwi.toml`:
+
+```bash
+sed -i 's/rfc2217ServerPort = 4001/rfc2217ServerPort = 4002/' wokwi.toml
+```
+
+Start the simulator, keep the Wokwi tab visible (otherwise simulation may
+pause), then connect from Git Bash using the ESP-IDF Python:
+
+```bash
+# Entrance Hub
+python -m serial.tools.miniterm rfc2217://localhost:4000 115200
+
+# Room 1
+python -m serial.tools.miniterm rfc2217://localhost:4001 115200
+
+# Room 2
+python -m serial.tools.miniterm rfc2217://localhost:4002 115200
+```
+
+If your normal Python has no `serial` module:
+
+```bash
+python -m pip install pyserial
+```
+
+Type commands as usual (`cocis help`, `cocis status`, ...). Quit miniterm with
+`Ctrl+]`. The Wokwi serial monitor can stay open too; both see the same UART.
+
 ### What you should see
 
 **Entrance Hub serial monitor**
