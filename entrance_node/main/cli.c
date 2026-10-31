@@ -34,6 +34,9 @@ static const char *TAG = "cli";
 
 #define CLI_LINE_MAX 160
 
+/* Set when a CR is seen so a following LF is not treated as a new line. */
+static bool s_swallow_lf;
+
 /* ------------------------------------------------------------------------- */
 /* Helpers                                                                    */
 /* ------------------------------------------------------------------------- */
@@ -62,11 +65,44 @@ static bool require_role(hub_app_t *app, cocis_role_t role)
     int index = app->auth.session_user;
     if (index >= 0 && (size_t)index < app->auth.count &&
         app->auth.users[index].must_change) {
-        printf("Password change required: passwd <old> <new>\n");
+        printf("Password change required: run `passwd` (you will be prompted).\n");
     } else {
         printf("Not authorised (login or use a higher role).\n");
     }
     return false;
+}
+
+/** Read a line without echoing it; one '*' is printed per character. */
+static bool read_secret(const char *prompt, char *out, size_t out_len)
+{
+    printf("%s", prompt);
+    size_t length = 0;
+
+    while (true) {
+        uint8_t ch;
+        int read = uart_read_bytes(UART_NUM_0, &ch, 1, portMAX_DELAY);
+        if (read <= 0) {
+            continue;
+        }
+
+        if (ch == '\r' || ch == '\n') {
+            if (ch == '\r') {
+                s_swallow_lf = true;
+            }
+            printf("\n");
+            out[length] = '\0';
+            return true;
+        }
+        if (ch == 0x7f || ch == '\b') {
+            if (length > 0) {
+                length--;
+                printf("\b \b");
+            }
+        } else if (isprint(ch) && length + 1 < out_len) {
+            out[length++] = (char)ch;
+            printf("*");
+        }
+    }
 }
 
 static bool valid_date(const char *text)
@@ -120,48 +156,48 @@ static const char *day_name(int day)
 /* Commands                                                                   */
 /* ------------------------------------------------------------------------- */
 
-static void cmd_help(void)
+static void cmd_help(hub_app_t *app)
 {
-    printf(
-        "\nUsage: cocis <command> [args]   (the cocis prefix is optional)\n\n"
-        "Commands\n"
-        "  help                              this list\n"
-        "  login <user> <pass>               open a session\n"
-        "  logout                            close the session\n"
-        "  passwd <old> <new>                change your password\n"
-        "  whoami                            current user and role\n"
-        "  status                            time, mode, counters\n"
-        "  users                             list registered tags\n"
-        "  adduser <uid> <name> [role] [expiry]\n"
-        "  deluser <uid> | suspend <uid> | resume <uid>\n"
-        "  scan in|out <uid>                 simulate an RFID scan\n"
-        "  schedule                          show opening hours\n"
-        "  schedule set <day> <open> <close> | schedule close <day>\n"
-        "  holiday add|del <YYYY-MM-DD>\n"
-        "  occupancy | rollcall              who is inside\n"
-        "  emergency on|off                  life-safety mode\n"
-        "  door entry|exit                   remote unlock (ADMIN)\n"
-        "  release <uid>                     let an occupant out (ADMIN)\n"
-        "  lights 1|2|all on|off|auto        control a room lamp\n"
-        "  nodes | rooms                     room link and sensor state\n"
-        "  alerts                            denial counters and tamper\n"
-        "  logs [YYYYMMDD]                   recent access records\n"
-        "  audit [YYYYMMDD]                  recent audit records\n"
-        "  verify                            check today's log chain\n"
-        "  diag                              self-test and heap\n"
-        "  config                            active constants (ADMIN)\n"
-        "  net                               connectivity\n"
-        "  reboot                            restart the hub\n\n");
+    cocis_role_t role = COCIS_ROLE_VIEWER;
+    cocis_auth_session_role(&app->auth, hub_now_ms(), &role);
+
+    printf("\nUsage: cocis <command> [args]   (the cocis prefix is optional)\n\n"
+           "Session\n"
+           "  help, login <user> [pass], logout, passwd [old] [new], whoami\n\n"
+           "Read-only\n"
+           "  status, users, occupancy, nodes, rooms, schedule, diag, net\n\n");
+
+    if (role >= COCIS_ROLE_SECURITY) {
+        printf("Security\n"
+               "  scan in|out <uid>, alerts, logs [YYYYMMDD], audit [YYYYMMDD],\n"
+               "  verify, rollcall, emergency on|off, lights 1|2|all on|off|auto\n\n");
+    }
+    if (role >= COCIS_ROLE_ADMIN) {
+        printf("Administration\n"
+               "  adduser, deluser, suspend, resume, schedule set|close, holiday,\n"
+               "  door entry|exit, release <uid>, config, reboot\n\n");
+    } else {
+        printf("Log in with a higher role to see more commands.\n\n");
+    }
 }
 
 static void cmd_login(hub_app_t *app, int argc, char **argv)
 {
-    if (argc < 3) {
-        printf("Usage: login <user> <pass>\n");
+    if (argc < 2) {
+        printf("Usage: login <user> [password]\n");
         return;
     }
 
-    cocis_auth_result_t result = cocis_auth_login(&app->auth, argv[1], argv[2],
+    char password[64];
+    const char *pass = argc >= 3 ? argv[2] : NULL;
+    if (pass == NULL) {
+        if (!read_secret("Password: ", password, sizeof(password))) {
+            return;
+        }
+        pass = password;
+    }
+
+    cocis_auth_result_t result = cocis_auth_login(&app->auth, argv[1], pass,
                                                   hub_now_ms(),
                                                   cocis_auth_pbkdf2_sha256);
 
@@ -174,7 +210,7 @@ static void cmd_login(hub_app_t *app, int argc, char **argv)
     }
     case COCIS_AUTH_MUST_CHANGE:
         printf("Login accepted, but you must set a new password first.\n"
-               "Run: passwd <old> <new>   (at least 8 characters)\n");
+               "Run: passwd   (you will be prompted; at least 8 characters)\n");
         break;
     case COCIS_AUTH_BAD_CREDENTIALS:
         printf("Login failed: incorrect username or password.\n");
@@ -198,16 +234,30 @@ static void cmd_login(hub_app_t *app, int argc, char **argv)
 
 static void cmd_passwd(hub_app_t *app, int argc, char **argv)
 {
-    if (argc < 3) {
-        printf("Usage: passwd <old> <new>\n");
-        return;
-    }
-    if (strlen(argv[2]) < 8) {
-        printf("Password not changed: use at least 8 characters.\n");
-        return;
-    }
     if (app->auth.session_user < 0) {
-        printf("Please log in first: login <user> <pass>\n");
+        printf("Please log in first: login <user>\n");
+        return;
+    }
+
+    char old_buf[64];
+    char new_buf[64];
+    const char *old_pass = argc >= 2 ? argv[1] : NULL;
+    const char *new_pass = argc >= 3 ? argv[2] : NULL;
+
+    if (old_pass == NULL) {
+        if (!read_secret("Current password: ", old_buf, sizeof(old_buf))) {
+            return;
+        }
+        old_pass = old_buf;
+    }
+    if (new_pass == NULL) {
+        if (!read_secret("New password: ", new_buf, sizeof(new_buf))) {
+            return;
+        }
+        new_pass = new_buf;
+    }
+    if (strlen(new_pass) < 8) {
+        printf("Password not changed: use at least 8 characters.\n");
         return;
     }
 
@@ -216,7 +266,7 @@ static void cmd_passwd(hub_app_t *app, int argc, char **argv)
     cocis_auth_random_salt(salt);
 
     cocis_auth_result_t result =
-        cocis_auth_change_password(&app->auth, username, argv[1], argv[2],
+        cocis_auth_change_password(&app->auth, username, old_pass, new_pass,
                                    salt, hub_now_ms(), cocis_auth_pbkdf2_sha256);
     if (result == COCIS_AUTH_OK) {
         printf("Password changed. Use the new password from now on.\n");
@@ -779,7 +829,7 @@ static void execute(hub_app_t *app, char *line)
         }
         argv[--argc] = NULL;
         if (argc == 0) {
-            cmd_help();
+            cmd_help(app);
             return;
         }
     }
@@ -787,7 +837,7 @@ static void execute(hub_app_t *app, char *line)
     const char *command = argv[0];
 
     if (strcasecmp(command, "help") == 0 || strcmp(command, "?") == 0) {
-        cmd_help();
+        cmd_help(app);
     } else if (strcasecmp(command, "login") == 0) {
         cmd_login(app, argc, argv);
     } else if (strcasecmp(command, "logout") == 0) {
@@ -897,7 +947,6 @@ static void cli_task(void *arg)
 
     char line[CLI_LINE_MAX];
     size_t length = 0;
-    bool last_was_cr = false;
 
     printf("\nCoCIS Entrance Hub console. Type `help`.\nHUB> ");
 
@@ -909,11 +958,11 @@ static void cli_task(void *arg)
         }
 
         /* A terminal may send CRLF; do not treat the LF as a second line. */
-        if (last_was_cr && ch == '\n') {
-            last_was_cr = false;
+        if (s_swallow_lf && ch == '\n') {
+            s_swallow_lf = false;
             continue;
         }
-        last_was_cr = (ch == '\r');
+        s_swallow_lf = (ch == '\r');
 
         if (ch == '\r' || ch == '\n') {
             if (length > 0) {

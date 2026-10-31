@@ -88,30 +88,42 @@ Default accounts created on first boot:
 ### Login and logout
 
 ```text
-cocis login <user> <pass>
+cocis login <user>
+Password: ********
 cocis whoami
 cocis logout
 ```
 
+The password is not echoed; one `*` is printed per character. For scripts or
+one-shot helpers you can also pass it inline: `cocis login security security123`.
+
 Examples:
 
 ```text
-cocis login security security123
-cocis login viewer viewer123
-cocis login admin admin123
+cocis login security
+cocis login viewer
+cocis login admin
 ```
 
 ### Change a password
 
 ```text
-cocis passwd <old> <new>
+cocis passwd
+Current password: ********
+New password: ********
 ```
 
-The new password must be at least 8 characters. The admin's first login:
+The new password must be at least 8 characters. You can also pass both values
+inline: `cocis passwd <old> <new>`.
+
+The admin's first login:
 
 ```text
-cocis login admin admin123
-cocis passwd admin123 Cocis2026!
+cocis login admin
+Password: ********
+cocis passwd
+Current password: ********
+New password: ********
 ```
 
 Use `Cocis2026!` for the rest of the demo, or whatever password you set.
@@ -124,8 +136,8 @@ Use `Cocis2026!` for the rest of the demo, or whatever password you set.
 
 | Command | Purpose |
 |---|---|
-| `help` | List commands |
-| `login <user> <pass>` | Open a session |
+| `help` | List commands available to your current role |
+| `login <user> [pass]` | Open a session (prompts for the password when omitted) |
 | `logout` | Close the session |
 | `passwd <old> <new>` | Change your password |
 | `whoami` | Current user and role |
