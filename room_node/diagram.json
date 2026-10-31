@@ -29,7 +29,14 @@
       "id": "relay",
       "top": 340,
       "left": 360,
-      "attrs": { "label": "Lamp relay" }
+      "attrs": { "label": "Lamp relay", "transistor": "pnp" }
+    },
+    {
+      "type": "wokwi-ssd1306",
+      "id": "oled",
+      "top": 340,
+      "left": 560,
+      "attrs": { "label": "Room status" }
     },
     {
       "type": "wokwi-led",
@@ -50,7 +57,7 @@
       "id": "led_lights",
       "top": 100,
       "left": 220,
-      "attrs": { "color": "yellow", "label": "Lamp on" }
+      "attrs": { "color": "yellow", "label": "Lamp" }
     },
     {
       "type": "wokwi-resistor",
@@ -94,29 +101,34 @@
 
     [ "pir:VCC", "esp:3V3", "red", [] ],
     [ "pir:GND", "esp:GND.1", "black", [] ],
-    [ "pir:OUT", "esp:13", "green", [] ],
+    [ "pir:OUT", "esp:D13", "green", [] ],
 
     [ "ldr:VCC", "esp:3V3", "red", [] ],
     [ "ldr:GND", "esp:GND.1", "black", [] ],
-    [ "ldr:AO", "esp:34", "yellow", [] ],
+    [ "ldr:AO", "esp:D34", "yellow", [] ],
 
     [ "relay:VCC", "esp:3V3", "red", [] ],
     [ "relay:GND", "esp:GND.1", "black", [] ],
-    [ "relay:IN", "esp:26", "orange", [] ],
+    [ "relay:IN", "esp:D26", "orange", [] ],
 
-    [ "esp:25", "led_occupied:A", "green", [] ],
+    [ "oled:VCC", "esp:3V3", "red", [] ],
+    [ "oled:GND", "esp:GND.1", "black", [] ],
+    [ "oled:SDA", "esp:D21", "blue", [] ],
+    [ "oled:SCL", "esp:D22", "yellow", [] ],
+
+    [ "esp:D25", "led_occupied:A", "green", [] ],
     [ "led_occupied:C", "r_occupied:1", "black", [] ],
     [ "r_occupied:2", "esp:GND.1", "black", [] ],
-    [ "esp:33", "led_lights:A", "yellow", [] ],
+    [ "esp:D33", "led_lights:A", "yellow", [] ],
     [ "led_lights:C", "r_lights:1", "black", [] ],
     [ "r_lights:2", "esp:GND.1", "black", [] ],
-    [ "esp:32", "led_network:A", "blue", [] ],
+    [ "esp:D32", "led_network:A", "blue", [] ],
     [ "led_network:C", "r_network:1", "black", [] ],
     [ "r_network:2", "esp:GND.1", "black", [] ],
 
-    [ "esp:14", "btn_override:1", "green", [] ],
+    [ "esp:D14", "btn_override:1", "green", [] ],
     [ "btn_override:2", "esp:GND.1", "black", [] ],
-    [ "esp:14", "r_override:1", "blue", [] ],
+    [ "esp:D14", "r_override:1", "blue", [] ],
     [ "r_override:2", "esp:3V3", "red", [] ]
   ],
   "dependencies": {}

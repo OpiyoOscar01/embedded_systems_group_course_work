@@ -59,5 +59,12 @@ void room_hal_set_led_network(bool on);
 /** Consume a debounced manual-override button press. */
 bool room_hal_take_override_press(void);
 
+/** True when the optional SSD1306 status display is present. */
+bool room_hal_display_ready(void);
+
+/** Render four short lines on the room status display. */
+void room_hal_display_show(const char *line1, const char *line2,
+                           const char *line3, const char *line4);
+
 /** Last self-test result. */
 room_diag_t room_hal_diag(void);

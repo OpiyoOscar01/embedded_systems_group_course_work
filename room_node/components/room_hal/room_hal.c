@@ -7,6 +7,7 @@
 
 #include "room_hal.h"
 
+#include "cocis_display.h"
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 #include "esp_log.h"
@@ -103,6 +104,11 @@ esp_err_t room_hal_init(void)
     }
 
     ESP_LOGI(TAG, "room HAL ready (adc=%d button=%d)", s_diag.adc_ok, s_diag.button_ok);
+
+    if (cocis_display_init(ROOM_PIN_I2C_SDA, ROOM_PIN_I2C_SCL) != ESP_OK) {
+        ESP_LOGW(TAG, "status display not available");
+    }
+
     return ESP_OK;
 }
 
@@ -164,4 +170,15 @@ bool room_hal_take_override_press(void)
 room_diag_t room_hal_diag(void)
 {
     return s_diag;
+}
+
+bool room_hal_display_ready(void)
+{
+    return cocis_display_ready();
+}
+
+void room_hal_display_show(const char *line1, const char *line2,
+                           const char *line3, const char *line4)
+{
+    cocis_display_show(line1, line2, line3, line4);
 }

@@ -277,6 +277,10 @@ R2>
 Rooms boot with the relay off and publish telemetry every 5 s. The hub marks a
 room offline after 15 s without telemetry.
 
+Each room's SSD1306 status display shows `ROOM n`, `Lights: ON/OFF`,
+`Motion: YES/NO` and the current lux, so lamp commands are visible on the
+simulator.
+
 If Wi-Fi or MQTT is still connecting, wait 15-30 s. `cocis net` shows the
 current state.
 

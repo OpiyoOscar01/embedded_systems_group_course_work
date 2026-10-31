@@ -268,6 +268,9 @@ static void room_task(void *arg)
     room_app_t *app = (room_app_t *)arg;
     uint32_t last_telemetry = 0;
     uint32_t last_energy_tick = room_now_ms();
+    uint32_t last_display_ms = 0;
+    bool shown_occupied = false;
+    bool shown_relay = false;
 
     while (true) {
         uint32_t now = room_now_ms();
@@ -316,6 +319,24 @@ static void room_task(void *arg)
         room_hal_set_led_occupied(app->light.occupied);
         room_hal_set_led_lights(relay);
         room_hal_set_led_network(cocis_net_connected(&app->net));
+
+        if (relay != shown_relay || app->light.occupied != shown_occupied ||
+            (now - last_display_ms) >= 1000u) {
+            shown_relay = relay;
+            shown_occupied = app->light.occupied;
+            last_display_ms = now;
+
+            char line1[24];
+            char line2[24];
+            char line3[24];
+            char line4[24];
+            snprintf(line1, sizeof(line1), "ROOM %d", CONFIG_COCIS_ROOM_ID);
+            snprintf(line2, sizeof(line2), "Lights: %s", relay ? "ON" : "OFF");
+            snprintf(line3, sizeof(line3), "Motion: %s",
+                     app->light.occupied ? "YES" : "NO");
+            snprintf(line4, sizeof(line4), "Lux: %d", lux);
+            room_hal_display_show(line1, line2, line3, line4);
+        }
 
         /* Integrate energy once per second. */
         uint32_t elapsed = now - last_energy_tick;

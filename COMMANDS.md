@@ -315,6 +315,9 @@ net
 | Motion while building closed | Intrusion alert sent to the hub |
 | Remote `lights` command | Room applies it locally and logs it |
 
+The room's SSD1306 status display shows the live values, including
+`Lights: ON` / `Lights: OFF`, so the lamp state is visible on the simulator.
+
 ---
 
 ## 5. Full demonstration script
