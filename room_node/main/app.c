@@ -421,8 +421,6 @@ void room_app_start(void)
     app->last_energy_log_ms = room_now_ms();
     room_hal_set_relay(false);
 
-    cocis_time_sntp_start();
-
     char lwt_topic[COCIS_NET_TOPIC_MAX];
     cocis_proto_topic_node(lwt_topic, sizeof(lwt_topic), CONFIG_COCIS_GROUP_PREFIX,
                            app->node, "status");
@@ -436,6 +434,9 @@ void room_app_start(void)
     };
     ESP_ERROR_CHECK(cocis_net_start(&app->net, &net_config));
     cocis_net_set_rx(&app->net, net_rx, app);
+
+    /* SNTP uses the lwIP timers, so it must start after the network stack. */
+    cocis_time_sntp_start();
 
     char cmd_topic[COCIS_NET_TOPIC_MAX];
     if (cocis_proto_topic_room(cmd_topic, sizeof(cmd_topic), CONFIG_COCIS_GROUP_PREFIX,

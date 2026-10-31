@@ -157,14 +157,35 @@ static void cmd_help(void)
 static void cmd_login(hub_app_t *app, int argc, char **argv)
 {
     if (argc < 3) {
-        printf("usage: login <user> <pass>\n");
+        printf("Usage: login <user> <pass>\n");
         return;
     }
 
     cocis_auth_result_t result = cocis_auth_login(&app->auth, argv[1], argv[2],
                                                   hub_now_ms(),
                                                   cocis_auth_pbkdf2_sha256);
-    printf("login: %s\n", cocis_auth_result_str(result));
+
+    switch (result) {
+    case COCIS_AUTH_OK: {
+        cocis_role_t role = COCIS_ROLE_VIEWER;
+        cocis_auth_session_role(&app->auth, hub_now_ms(), &role);
+        printf("Welcome %s. You are logged in as %s.\n", argv[1], hub_role_str(role));
+        break;
+    }
+    case COCIS_AUTH_MUST_CHANGE:
+        printf("Login accepted, but you must set a new password first.\n"
+               "Run: passwd <old> <new>   (at least 8 characters)\n");
+        break;
+    case COCIS_AUTH_BAD_CREDENTIALS:
+        printf("Login failed: incorrect username or password.\n");
+        break;
+    case COCIS_AUTH_LOCKED:
+        printf("Login failed: too many attempts. Try again in 60 seconds.\n");
+        break;
+    default:
+        printf("Login failed (%s).\n", cocis_auth_result_str(result));
+        break;
+    }
 
     char detail[64];
     snprintf(detail, sizeof(detail), "%s", cocis_auth_result_str(result));
@@ -173,23 +194,20 @@ static void cmd_login(hub_app_t *app, int argc, char **argv)
     if (result == COCIS_AUTH_BAD_CREDENTIALS || result == COCIS_AUTH_LOCKED) {
         hub_app_publish_event(app, "alert", "{\"kind\":\"console_login\"}");
     }
-    if (result == COCIS_AUTH_MUST_CHANGE) {
-        printf("First login: run `passwd admin123 <new>` before other commands.\n");
-    }
 }
 
 static void cmd_passwd(hub_app_t *app, int argc, char **argv)
 {
     if (argc < 3) {
-        printf("usage: passwd <old> <new>\n");
+        printf("Usage: passwd <old> <new>\n");
         return;
     }
     if (strlen(argv[2]) < 8) {
-        printf("password must be at least 8 characters\n");
+        printf("Password not changed: use at least 8 characters.\n");
         return;
     }
     if (app->auth.session_user < 0) {
-        printf("login first\n");
+        printf("Please log in first: login <user> <pass>\n");
         return;
     }
 
@@ -200,7 +218,13 @@ static void cmd_passwd(hub_app_t *app, int argc, char **argv)
     cocis_auth_result_t result =
         cocis_auth_change_password(&app->auth, username, argv[1], argv[2],
                                    salt, hub_now_ms(), cocis_auth_pbkdf2_sha256);
-    printf("passwd: %s\n", cocis_auth_result_str(result));
+    if (result == COCIS_AUTH_OK) {
+        printf("Password changed. Use the new password from now on.\n");
+    } else if (result == COCIS_AUTH_BAD_CREDENTIALS) {
+        printf("Password not changed: the old password is incorrect.\n");
+    } else {
+        printf("Password not changed (%s).\n", cocis_auth_result_str(result));
+    }
 
     if (result == COCIS_AUTH_OK) {
         state_store_save_auth(&app->auth);
@@ -873,6 +897,7 @@ static void cli_task(void *arg)
 
     char line[CLI_LINE_MAX];
     size_t length = 0;
+    bool last_was_cr = false;
 
     printf("\nCoCIS Entrance Hub console. Type `help`.\nHUB> ");
 
@@ -882,6 +907,13 @@ static void cli_task(void *arg)
         if (read <= 0) {
             continue;
         }
+
+        /* A terminal may send CRLF; do not treat the LF as a second line. */
+        if (last_was_cr && ch == '\n') {
+            last_was_cr = false;
+            continue;
+        }
+        last_was_cr = (ch == '\r');
 
         if (ch == '\r' || ch == '\n') {
             if (length > 0) {

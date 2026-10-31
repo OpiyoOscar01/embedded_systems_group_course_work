@@ -518,7 +518,7 @@ static void net_rx(const char *topic, const char *payload, size_t len, void *ctx
         return;
     }
 
-    ESP_LOGI(TAG, "rx %s from %s type %s", topic, envelope.src, envelope.type);
+    ESP_LOGD(TAG, "rx %s from %s type %s", topic, envelope.src, envelope.type);
 
     int room = 0;
     if (envelope.src[0] == 'R' && (envelope.src[1] == '1' || envelope.src[1] == '2')) {
@@ -721,11 +721,6 @@ void hub_app_start(void)
         provision_auth(app);
     }
 
-    err = cocis_time_sntp_start();
-    if (err != ESP_OK) {
-        ESP_LOGW(TAG, "SNTP start failed: %s", esp_err_to_name(err));
-    }
-
     char lwt_topic[COCIS_NET_TOPIC_MAX];
     cocis_proto_topic_node(lwt_topic, sizeof(lwt_topic), CONFIG_COCIS_GROUP_PREFIX,
                            "HUB", "status");
@@ -736,6 +731,12 @@ void hub_app_start(void)
     };
     ESP_ERROR_CHECK(cocis_net_start(&app->net, &net_config));
     cocis_net_set_rx(&app->net, net_rx, app);
+
+    /* SNTP uses the lwIP timers, so it must start after the network stack. */
+    err = cocis_time_sntp_start();
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "SNTP start failed: %s", esp_err_to_name(err));
+    }
 
     char room_topic[COCIS_NET_TOPIC_MAX];
     if (cocis_proto_topic_join(room_topic, sizeof(room_topic),

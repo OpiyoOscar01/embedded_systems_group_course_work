@@ -145,8 +145,8 @@
     }
   ],
   "connections": [
-    [ "esp:TX", "$serialMonitor:RX", "", [] ],
-    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "esp:TX0", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX0", "$serialMonitor:TX", "", [] ],
 
     [ "sd:VCC", "esp:3V3", "red", [] ],
     [ "sd:GND", "esp:GND.1", "black", [] ],

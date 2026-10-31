@@ -89,8 +89,8 @@
     }
   ],
   "connections": [
-    [ "esp:TX", "$serialMonitor:RX", "", [] ],
-    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "esp:TX0", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX0", "$serialMonitor:TX", "", [] ],
 
     [ "pir:VCC", "esp:3V3", "red", [] ],
     [ "pir:GND", "esp:GND.1", "black", [] ],

@@ -14,6 +14,7 @@
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_random.h"
+#include "esp_timer.h"
 #include "esp_wifi.h"
 #include "sdkconfig.h"
 
@@ -21,6 +22,13 @@ static const char *TAG = "cocis_net";
 
 #define WIFI_BIT BIT0
 #define MQTT_BIT BIT1
+
+static uint32_t s_last_link_warn_ms;
+
+static uint32_t link_now_ms(void)
+{
+    return (uint32_t)(esp_timer_get_time() / 1000);
+}
 
 /* ------------------------------------------------------------------------- */
 /* Queue and subscription helpers (all called with `net->lock` held)          */
@@ -109,7 +117,7 @@ static void mqtt_event_handler(void *arg, esp_event_base_t base, int32_t event_i
     case MQTT_EVENT_CONNECTED:
         net->mqtt_connected = true;
         xEventGroupSetBits(net->events, MQTT_BIT);
-        ESP_LOGI(TAG, "MQTT connected as %s", net->client_id);
+        ESP_LOGI(TAG, "Broker connected; live updates are flowing.");
 
         xSemaphoreTake(net->lock, portMAX_DELAY);
         for (size_t i = 0; i < net->subscription_count; i++) {
@@ -123,7 +131,10 @@ static void mqtt_event_handler(void *arg, esp_event_base_t base, int32_t event_i
     case MQTT_EVENT_DISCONNECTED:
         net->mqtt_connected = false;
         xEventGroupClearBits(net->events, MQTT_BIT);
-        ESP_LOGW(TAG, "MQTT disconnected");
+        if (link_now_ms() - s_last_link_warn_ms >= 30000u) {
+            s_last_link_warn_ms = link_now_ms();
+            ESP_LOGW(TAG, "Broker link lost; reconnecting automatically.");
+        }
         break;
 
     case MQTT_EVENT_DATA: {
@@ -152,9 +163,9 @@ static void mqtt_event_handler(void *arg, esp_event_base_t base, int32_t event_i
     }
 
     case MQTT_EVENT_ERROR:
-        ESP_LOGW(TAG, "MQTT error (type %d)", event->error_handle != NULL
-                                                ? event->error_handle->error_type
-                                                : -1);
+        ESP_LOGD(TAG, "broker transport error (type %d)", event->error_handle != NULL
+                                                          ? event->error_handle->error_type
+                                                          : -1);
         break;
 
     default:
@@ -176,7 +187,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t base, int32_t event_i
     } else if (base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
         net->wifi_connected = false;
         xEventGroupClearBits(net->events, WIFI_BIT);
-        ESP_LOGW(TAG, "Wi-Fi disconnected, reconnecting");
+        ESP_LOGD(TAG, "Wi-Fi link lost; reconnecting automatically.");
         esp_wifi_connect();
     } else if (base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
@@ -213,6 +224,12 @@ esp_err_t cocis_net_start(cocis_net_t *net, const cocis_net_config_t *config)
         snprintf(net->lwt_payload, sizeof(net->lwt_payload),
                  "%s", config->lwt_payload != NULL ? config->lwt_payload : "offline");
     }
+
+    /* Transient broker reconnects are normal on a shared/public broker; hide
+     * the low-level transport errors and report state through `net` instead. */
+    esp_log_level_set("mqtt_client", ESP_LOG_NONE);
+    esp_log_level_set("transport_base", ESP_LOG_NONE);
+    esp_log_level_set("esp-tls", ESP_LOG_NONE);
 
     /* --- Wi-Fi station ------------------------------------------------- */
     ESP_ERROR_CHECK(esp_netif_init());
