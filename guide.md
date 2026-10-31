@@ -522,6 +522,7 @@ Expected:
 - Entry servo opens for 5 s.
 - Green entry LED turns on.
 - Short beep.
+- Hub OLED shows `ACCESS GRANTED` with the UID and reason.
 - Log line showing `A1B2C3D4 IN -> GRANTED (1 inside)`.
 - `cocis occupancy` lists the demo student.
 - `cocis logs` shows the hash-chained access row.
@@ -532,7 +533,8 @@ Expected:
 cocis scan in A1B2C3D4
 ```
 
-Expected: denied, red LED, longer beep, occupancy stays 1.
+Expected: denied, red entry LED, longer beep, hub OLED `ACCESS DENIED`
+with the reason, occupancy stays 1.
 
 Say:
 
@@ -557,7 +559,8 @@ cocis scan out A1B2C3D4
 cocis occupancy
 ```
 
-Expected: exit granted, occupancy returns to 0.
+Expected: exit green LED, exit servo opens for 5 s, short beep, hub OLED
+`ACCESS GRANTED`, occupancy returns to 0.
 
 ### Step 7 - User administration
 
@@ -606,9 +609,14 @@ cocis status
 
 Expected:
 
-- Relay/lamp turns on.
+- Relay/lamp turns on and the **Lamp** LED lights.
 - Occupied LED on.
+- Room display shows `Motion: YES`, `Lights: ON` and the lux value.
 - `status` shows occupied, dark lux and relay on.
+
+You can also use the real Wokwi parts instead of `sim`: run `cocis sim clear`,
+click the **PIR** part and choose **Simulate Motion**, and click the **LDR**
+part to set a low lux. The same LEDs, relay and room display react.
 
 **R1**
 

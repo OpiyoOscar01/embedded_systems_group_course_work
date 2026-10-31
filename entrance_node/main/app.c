@@ -276,6 +276,9 @@ void hub_app_scan(hub_app_t *app, const char *uid, cocis_dir_t direction)
     cocis_door_fsm_t *fsm = direction == COCIS_DIR_ENTRY ? &app->door_entry : &app->door_exit;
 
     hub_hal_show_result(door, decision.open_door);
+    hub_hal_display_show("COCIS HUB",
+                         decision.open_door ? "ACCESS GRANTED" : "ACCESS DENIED",
+                         uid, cocis_result_str(decision.result));
     if (decision.open_door) {
         hub_hal_beep(120);
         if (cocis_door_fsm_request(fsm, now_ms)) {

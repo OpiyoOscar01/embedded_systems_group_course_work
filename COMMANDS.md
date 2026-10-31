@@ -267,6 +267,42 @@ cocis schedule set sat 08:00 14:00
 cocis schedule close sun
 ```
 
+### Entering the building (entry door)
+
+`scan in` runs the access decision and drives the entry hardware, so the result
+is visible on the Entrance Hub diagram, not only in the console.
+
+```text
+cocis login security security123
+cocis scan in A1B2C3D4
+```
+
+| Decision | Console | Simulator effect |
+|---|---|---|
+| `GRANTED` | `A1B2C3D4 IN -> GRANTED` | Entry green LED on, entry servo opens 5 s, short beep, OLED `ACCESS GRANTED`, occupancy +1 |
+| `DENY_ANTIPASSBACK` | denied | Entry red LED on, long beep, OLED `ACCESS DENIED` |
+| `DENY_UNKNOWN` | denied | Entry red LED, long beep |
+| `DENY_OUTSIDE_HOURS` | denied | Entry red LED, long beep |
+| `DENY_SUSPENDED` / `DENY_EXPIRED` | denied | Entry red LED, long beep |
+
+The red LED stays lit until the next scan updates the result. Repeated unknown
+tags raise a brute-force alert (`alerts`).
+
+### Leaving the building (exit door)
+
+```text
+cocis scan out A1B2C3D4
+```
+
+| Decision | Console | Simulator effect |
+|---|---|---|
+| `GRANTED` | `A1B2C3D4 OUT -> GRANTED` | Exit green LED on, exit servo opens 5 s, short beep, OLED `ACCESS GRANTED`, occupancy -1 |
+| `DENY_EXIT_OUTSIDE_HOURS` | denied | Exit red LED on, long beep; admin `release <uid>` or `emergency on` overrides |
+| `ANOMALY_EXIT_NO_ENTRY` | granted with anomaly | Exit green LED, exit servo, logged as an anomaly |
+
+Entry and exit have separate LEDs (`D32`/`D33` and `GPIO16`/`GPIO17`) and
+separate servos (`D13` and `D14`), so both can be demonstrated independently.
+
 ---
 
 ## 4. Room 1 and Room 2 commands
@@ -318,6 +354,28 @@ net
 The room's SSD1306 status display shows the live values, including
 `Lights: ON` / `Lights: OFF`, so the lamp state is visible on the simulator.
 
+### Using the real PIR and LDR (Wokwi parts)
+
+`sim clear` returns the room to the physical Wokwi sensors. Then, with the
+simulation running:
+
+1. Click the **PIR** part and choose **Simulate Motion**. The OUT pin stays
+   high for 5 s.
+2. Click the **LDR** part and lower the lux value to make the room dark.
+3. The relay/lamp turns on, the **Lamp** LED lights, and the room display shows
+   `Motion: YES` and `Lights: ON`.
+4. Run `sim clear` again after any CLI injection so the real parts take over.
+
+The same behaviour can be driven entirely from the CLI:
+
+```text
+sim lux 50
+sim motion on
+status
+sim motion off
+sim clear
+```
+
 ---
 
 ## 5. Full demonstration script
@@ -345,7 +403,8 @@ cocis occupancy
 cocis logs
 ```
 
-Expected: door opens 5 s, green LED, short beep, occupancy 1, logged.
+Expected: entry green LED on, entry servo opens 5 s, short beep,
+hub OLED `ACCESS GRANTED`, occupancy 1, logged.
 
 ### Step 3 - Anti-passback
 
@@ -354,7 +413,8 @@ Expected: door opens 5 s, green LED, short beep, occupancy 1, logged.
 cocis scan in A1B2C3D4
 ```
 
-Expected: denied, red LED, longer beep, occupancy stays 1.
+Expected: denied, entry red LED on, longer beep, OLED `ACCESS DENIED`,
+occupancy stays 1.
 
 ### Step 4 - Unknown tag and brute-force alert
 
@@ -376,7 +436,8 @@ cocis scan out A1B2C3D4
 cocis occupancy
 ```
 
-Expected: exit granted, occupancy 0.
+Expected: exit green LED on, exit servo opens 5 s, short beep,
+hub OLED `ACCESS GRANTED`, occupancy 0.
 
 ### Step 6 - User administration
 
