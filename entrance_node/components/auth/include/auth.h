@@ -6,7 +6,7 @@
  *   - passwords are never stored, only PBKDF2-HMAC-SHA256 hashes;
  *   - each credential has its own 16-byte salt;
  *   - three failed attempts lock the account for 60 s;
- *   - a session ends after 120 s without activity;
+ *   - a session ends after 300 s without activity;
  *   - the first-boot ADMIN must change its password before doing anything else.
  *
  * The PBKDF2 implementation is injected as a callback so this file stays pure

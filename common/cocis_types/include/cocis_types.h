@@ -71,7 +71,7 @@ typedef enum {
 #define COCIS_HEARTBEAT_S         5
 #define COCIS_OFFLINE_AFTER_S     15
 #define COCIS_LOCK_LEASE_MS       3000
-#define COCIS_SESSION_IDLE_S      120
+#define COCIS_SESSION_IDLE_S      300
 #define COCIS_LOGIN_FAIL_MAX      3
 #define COCIS_LOCKOUT_S           60
 #define COCIS_OCC_SNAPSHOT_S      60

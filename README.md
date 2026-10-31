@@ -278,7 +278,7 @@ cocis login security security123
 cocis whoami
 ```
 
-Sessions idle out after 120 s; log in again if a command says
+Sessions idle out after 5 minutes (300 s); log in again if a command says
 `Not authorised`. Three bad passwords lock the account for 60 s. The admin
 must run `passwd admin123 <new-password>` before other admin commands work.
 

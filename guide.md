@@ -322,7 +322,7 @@ cocis passwd admin123 Cocis2026!
 Use `Cocis2026!` for the rest of this guide. If the password was changed on a
 previous run, use that password instead.
 
-Sessions expire after 120 s idle, and three failed logins lock the account for
+Sessions expire after 5 minutes (300 s) idle, and three failed logins lock the account for
 60 s. Log in again when a command says `Not authorised`.
 
 ### Room console
@@ -477,7 +477,7 @@ Expected: `R1` and `R2` online, with a schedule version matching the hub.
 ## 14. Demonstration script (about 15 minutes)
 
 Run the steps in order. Commands on the hub are marked **HUB**, on Room 1
-**R1**, and on Room 2 **R2**. If the hub says `Not authorised`, the 120 s
+**R1**, and on Room 2 **R2**. If the hub says `Not authorised`, the 5 minute
 session expired; log in again with `cocis login admin Cocis2026!` (or the
 security account) and repeat the last command.
 

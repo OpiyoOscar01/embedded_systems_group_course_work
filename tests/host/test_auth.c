@@ -114,12 +114,14 @@ void test_auth_idle_and_roles(void)
     CHECK(cocis_auth_require(&auth, 1000, COCIS_ROLE_SECURITY));
     CHECK(!cocis_auth_require(&auth, 1000, COCIS_ROLE_ADMIN));
 
-    /* Activity at 119.999 s keeps the session alive. */
-    CHECK(cocis_auth_require(&auth, 119999, COCIS_ROLE_VIEWER));
+    /* Activity just before the idle limit keeps the session alive. */
+    uint32_t idle_ms = COCIS_SESSION_IDLE_S * 1000u;
+    CHECK(cocis_auth_require(&auth, idle_ms - 1u, COCIS_ROLE_VIEWER));
 
-    /* 120 s after the last activity the session is gone. */
-    CHECK(!cocis_auth_require(&auth, 239999, COCIS_ROLE_VIEWER));
-    CHECK(!cocis_auth_session_role(&auth, 239999, NULL));
+    /* One full idle period after the last activity ends the session. */
+    uint32_t expired_ms = (idle_ms - 1u) + idle_ms;
+    CHECK(!cocis_auth_require(&auth, expired_ms, COCIS_ROLE_VIEWER));
+    CHECK(!cocis_auth_session_role(&auth, expired_ms, NULL));
     CHECK(auth.session_user == -1);
 
     CHECK_EQ(cocis_auth_login(&auth, "viewer", "pw2", 0, fake_pbkdf2), COCIS_AUTH_OK);

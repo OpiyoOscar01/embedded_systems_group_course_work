@@ -79,7 +79,7 @@ Default accounts created on first boot:
 | `security` | `security123` | SECURITY | Access and security commands |
 | `viewer` | `viewer123` | VIEWER | Read-only |
 
-- Sessions idle out after 120 s; log in again when a command says
+- Sessions idle out after 5 minutes (300 s); log in again when a command says
   `Not authorised`.
 - Three failed logins lock the account for 60 s.
 - The `admin` account must run `passwd` before any other admin command works.
@@ -577,7 +577,7 @@ Expected: `verify` reports the chain intact.
 | Daylight threshold | lux > 800 |
 | Lamp power | 72 W |
 | Tariff | 780 UGX/kWh |
-| Console session idle timeout | 120 s |
+| Console session idle timeout | 300 s (5 min) |
 | Login lockout | 3 failures, 60 s |
 
 ---

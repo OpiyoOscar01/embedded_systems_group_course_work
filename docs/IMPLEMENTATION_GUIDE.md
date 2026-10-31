@@ -294,7 +294,7 @@ CLI (Table 10)
 - [ ] FR-CLI-03 help by role + unknown message
 - [ ] FR-CLI-04 config needs authorised role
 - [ ] FR-CLI-05 OLED/LED/MQTT status outputs
-- [ ] FR-CLI-06 session idle 120 s, no echo
+- [ ] FR-CLI-06 session idle timeout (300 s configured) + no password echo
 
 Schedule (Table 11)
 - [ ] FR-SCH-01 configure without reflash
